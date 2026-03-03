@@ -1,0 +1,845 @@
+﻿<!--Developed by CaYaDev - https://cayadev.com -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Word Counter</title>
+    <link rel="icon" type="image/svg+xml" href="./CaYaDevSite.svg">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+</head>
+<body>
+    <!-- Background Letters -->
+    <div class="background-letters" id="backgroundLetters"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <a href="/" class="logo-link" title="CaYaDev Home Page">
+                <img src="../../css/CaYaDev.svg" alt="CaYaDev Logo" class="logo">
+            </a>
+            <div class="nav-title">Word Counter - Admin Panel</div>
+        </div>
+    </header>
+
+    <div class="container admin-container">
+        <!-- Admin Panel Header -->
+        <div class="admin-header-section">
+            <h1 class="admin-title">🎮 ADMIN PANEL</h1>
+        </div>
+
+        <!-- Admin Panel Content -->
+        <div class="admin-panel">
+            
+            <!-- Room Info -->
+            <div class="admin-section room-info-section">
+                <h2>📋 Room Info</h2>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <label>Room Code</label>
+                        <div class="code-display-large">
+                            <span id="displayRoomCode">--------</span>
+                            <button class="btn-copy-large" id="copyRoomCodeBtnAdmin" title="Copy">📋</button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="showRoomCodeOnScoreboard">
+                                Show room code on scoreboard
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="showLettersOnScoreboard" checked>
+                                Show letters on scoreboard
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="enableLiveScoreUpdates">
+                                Enable live score updates
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useCustomLetters">
+                                Use custom letters
+                            </label>
+                            <button class="btn-edit-letters" id="editCustomLettersBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                ✏️ Edit
+                            </button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useBoxBasedLetters">
+                                Box-based letter output
+                            </label>
+                            <button class="btn-edit-box-letters" id="editBoxLettersBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                📦 Edit
+                            </button>
+                        </div>
+                        <!-- <div style="margin-top: 10px; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 6px; border-left: 3px solid #f59e0b;">
+                            <small style="color: #fbbf24; font-size: 12px;">
+                                ℹ️ Note: Only one letter output system can be active at a time.
+                            </small>
+                        </div> -->
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useCustomScoring">
+                                Custom scoring system
+                            </label>
+                            <button class="btn-edit-scoring" id="editCustomScoringBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                ⚙️ Edit
+                            </button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="disableCardAnimations">
+                                Disable card animations (for low-performance devices)
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="acceptAbbreviations">
+                                Accept abbreviations (e.g. GDP, NATO, etc.)
+                            </label>
+                        </div>
+
+                        <!-- Room Images (Left/Right) -->
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.1);">
+                            <h3 style="font-size: 0.95rem; font-weight: 700; color: #555; margin-bottom: 12px;">🖼️ Room Images</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <!-- Left Image -->
+                                <div style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px; border: 2px dashed #667eea;">
+                                    <div style="font-weight: 600; color: #555; margin-bottom: 10px; font-size: 0.95rem;">⬅️ Top Left Image</div>
+                                    <div id="leftImagePreview" style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <span style="color: #999; font-size: 0.85rem;">No image</span>
+                                    </div>
+                                    <input type="file" id="leftImageInput" accept="image/*" style="display: none;">
+                                    <button class="btn-primary" id="uploadLeftImageBtn" style="width: 100%; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;" onclick="document.getElementById('leftImageInput').click();">📤 Upload</button>
+                                    <button class="btn-danger" id="removeLeftImageBtn" style="width: 100%; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; margin-top: 8px; display: none;" onclick="removeRoomImage('left');">🗑️ Delete</button>
+                                </div>
+
+                                <!-- Right Image -->
+                                <div style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px; border: 2px dashed #667eea;">
+                                    <div style="font-weight: 600; color: #555; margin-bottom: 10px; font-size: 0.95rem;">➡️ Top Right Image</div>
+                                    <div id="rightImagePreview" style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <span style="color: #999; font-size: 0.85rem;">No image</span>
+                                    </div>
+                                    <input type="file" id="rightImageInput" accept="image/*" style="display: none;">
+                                    <button class="btn-primary" id="uploadRightImageBtn" style="width: 100%; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;" onclick="document.getElementById('rightImageInput').click();">📤 Upload</button>
+                                    <button class="btn-danger" id="removeRightImageBtn" style="width: 100%; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; margin-top: 8px; display: none;" onclick="removeRoomImage('right');">🗑️ Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Settings Import/Export -->
+                        <div class="settings-import-export" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-export-settings" id="exportSettingsBtn" style="flex: 1; padding: 10px 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    📤 Export Settings
+                                </button>
+                                <button class="btn-import-settings" id="importSettingsBtn" style="flex: 1; padding: 10px 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    📥 Import Settings
+                                </button>
+                            </div>
+                            <input type="file" id="importSettingsFileInput" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <label>Room Status</label>
+                        <div class="status-info">
+                            <div class="status-item">
+                                <span class="status-label">Status:</span>
+                                <span class="status-value" id="roomStatus">Active</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Time Left:</span>
+                                <span class="status-value" id="roomTimeLeft">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Games Played:</span>
+                                <span class="status-value" id="totalGamesPlayed">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Code Card -->
+            <div class="admin-code-section">
+                <h2>🔑 Admin Code</h2>
+                <div class="admin-code-card-large">
+                    <span id="adminCodeDisplay" class="admin-code-value">--------</span>
+                    <button class="btn-copy-admin-code" id="copyAdminCode" title="Copy">📋 Copy</button>
+                </div>
+            </div>
+
+            <!-- Scoreboard Link -->
+            <div class="admin-section scoreboard-section">
+                <h2>📊 Scoreboard</h2>
+                <button class="btn-scoreboard" id="openScoreboardBtn">
+                    <span class="btn-icon">📺</span>
+                    <span>Open Scoreboard in New Tab</span>
+                </button>
+                <p class="scoreboard-info">
+                    💡 Display the scoreboard on a projector or large screen!
+                </p>
+            </div>
+
+            <!-- Game Controls -->
+            <div class="admin-section game-controls-section">
+                <h2>🎮 Game Controls</h2>
+                
+                <div class="game-status">
+                    <div class="current-game-info">
+                        <span class="game-state-label">Game State:</span>
+                        <span class="game-state-value" id="gameState">No Game</span>
+                    </div>
+                    <div class="current-session-info">
+                        <span>Session:</span>
+                        <span id="currentSessionId">-</span>
+                    </div>
+                    <div class="current-session-info">
+                        <span>Game End Time:</span>
+                        <span id="gameTimeRemaining" style="font-weight: bold; color: #4CAF50;">-</span>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <div class="control-group">
+                        <label>
+                            Game Duration (Minutes)
+                            <button id="gameSettingsBtn" class="settings-icon-btn" title="Game Settings">⚙️</button>
+                        </label>
+                        <input type="number" id="gameDuration" min="1" max="60" value="10" class="duration-input">
+                    </div>
+                    
+                    <button class="btn-control btn-create-game" id="createGameBtn">
+                        <span class="btn-icon">🎲</span>
+                        <span>Create New Game</span>
+                    </button>
+                    
+                    <button class="btn-control btn-generate-letters" id="generateLettersBtn" disabled>
+                        <span class="btn-icon">✏️</span>
+                        <span>Generate Letters</span>
+                    </button>
+                    
+                    <button class="btn-control btn-show-words" id="showPossibleWordsBtn" style="display: none;">
+                        <span class="btn-icon">📖</span>
+                        <span>Possible Words</span>
+                        <span class="word-count-badge" id="possibleWordCountBadge">0</span>
+                    </button>
+                    
+                    <button class="btn-control btn-reveal-letters" id="revealLettersBtn" disabled>
+                        <span class="btn-icon">🔤</span>
+                        <span>Reveal Letters</span>
+                    </button>
+                    
+                    <button class="btn-control btn-start-timer" id="startTimerBtn" disabled>
+                        <span class="btn-icon">⏱️</span>
+                        <span>Start Timer</span>
+                    </button>
+                    
+                    <button class="btn-control btn-pause-game" id="pauseGameBtn" disabled style="display: none;">
+                        <span class="btn-icon">⏸️</span>
+                        <span>Pause Game</span>
+                    </button>
+                    
+                    <button class="btn-control btn-resume-game" id="resumeGameBtn" disabled style="display: none;">
+                        <span class="btn-icon">▶️</span>
+                        <span>Resume Game</span>
+                    </button>
+                    
+                    <button class="btn-control btn-end-game" id="endGameBtn" disabled>
+                        <span class="btn-icon">🏁</span>
+                        <span>End Game</span>
+                    </button>
+                </div>
+
+                <!-- Letter display (when created) -->
+                <div class="letters-display" id="lettersDisplay" style="display: none;">
+                    <h3>Current Letters:</h3>
+                    <div class="letters-row" id="currentLetters">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Word Notifications -->
+                <div class="word-notifications" id="wordNotifications">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">📝 Incoming Words</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="wordDisplayMode" value="all" checked id="wordModeAll">
+                                <span>All (Real-time)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="wordDisplayMode" value="grouped" id="wordModeGrouped">
+                                <span>By Participant</span>
+                            </label>
+                            <button class="btn-control btn-small" id="showGameHistoryBtn" title="Game History" style="padding: 5px 10px; font-size: 12px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                                📜 History
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- All mode (current) -->
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                    
+                    <!-- Participant-based mode -->
+                    <div class="participants-words" id="participantsWords" style="display: none;">
+                        <div class="participant-tabs" id="participantTabs">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                        <div class="participant-words-content" id="participantWordsContent">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Live Score Status -->
+                <div class="live-scores" id="liveScores" style="display: none;">
+                    <h3>⚡ Live Score Status</h3>
+                    <div class="live-scores-table" id="liveScoresTable">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel Export -->
+            <div class="admin-section export-section">
+                <h2>📊 Export</h2>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn-export-excel" id="exportExcelBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s; font-size: 16px; flex: 1; min-width: 250px;">
+                        📥 Download All Data (Excel)
+                    </button>
+                    <button class="btn-export-pdf" id="exportPdfBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s; font-size: 16px; flex: 1; min-width: 250px;">
+                        📄 Download Scoreboard PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="admin-section stats-section">
+                <h2>📈 Statistics</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPlayers">0</div>
+                        <div class="stat-label">Total Participants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activePlayers">0</div>
+                        <div class="stat-label">Active Participants</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="eliminatedPlayers">0</div>
+                        <div class="stat-label">Eliminated Participants</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Live Player Activity -->
+            <div class="admin-section activity-log-section">
+                <h2>📊 Live Player Activity</h2>
+                <div class="activity-controls" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn-clear-log" id="clearActivityLogBtn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        🗑️ Clear
+                    </button>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                        <input type="checkbox" id="autoScrollLog" checked>
+                        <span>Auto Scroll</span>
+                    </label>
+                </div>
+                <div class="activity-log" id="activityLog" style="background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 15px; max-height: 400px; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.8; color: #000;">
+                    <div style="color: rgba(0, 0, 0, 0.5); text-align: center; padding: 20px;">
+                        Activity logs will appear here...
+                    </div>
+                </div>
+            </div>
+
+             <!-- Participant Management -->
+            <div class="admin-section participants-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>👥 Participants</h2>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <!-- Connection Status Indicator -->
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: #10b981;"></div>
+                                <span style="font-size: 13px; color: #666;">Connected</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></div>
+                                <span style="font-size: 13px; color: #666;">Disconnected</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-participant" id="addParticipantBtn" style="padding: 10px 20px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">
+                            ➕ Add New Participant
+                        </button>
+                    </div>
+                </div>
+                <div class="participants-grid" id="participantsGrid">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game History Modal -->
+    <div id="gameHistoryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <span class="close-modal" id="closeGameHistoryModal">&times;</span>
+            <h2>📜 Game History</h2>
+            <div id="gameHistoryList">
+                <!-- Will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Create background letters (from room.js)
+        const VOWELS = ['A', 'E', 'I', 'O', 'U'];
+        const CONSONANTS = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'];
+        
+        function createBackgroundLetters() {
+            const container = document.getElementById('backgroundLetters');
+            const allLetters = [...VOWELS, ...CONSONANTS];
+            const letterCount = 20;
+            
+            for (let i = 0; i < letterCount; i++) {
+                const letter = document.createElement('div');
+                letter.className = 'bg-letter';
+                letter.textContent = allLetters[Math.floor(Math.random() * allLetters.length)];
+                letter.style.left = Math.random() * 100 + '%';
+                letter.style.fontSize = (Math.random() * 80 + 40) + 'px';
+                letter.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                letter.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(letter);
+            }
+        }
+        
+        createBackgroundLetters();
+    </script>
+
+    <!-- Game Settings Modal -->
+    <div id="gameSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h2>⚙️ Game Settings</h2>
+                <button class="close-modal" id="closeSettingsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="defaultGameDuration">Default Game Duration (Minutes)</label>
+                    <input type="number" id="defaultGameDuration" min="1" max="120" value="10" class="duration-input">
+                    <small>This duration will be used automatically when creating new games.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="btn-save">💾 Save</button>
+                <button id="cancelSettingsBtn" class="btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Score Edit Modal -->
+    <div id="editScoreModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>✏️ Edit Score</h2>
+                <button class="close-modal" id="closeEditScoreModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="edit-score-info">
+                    <p><strong>Participant:</strong> <span id="editScoreParticipantName">-</span></p>
+                    <p><strong>Total Score (All Games):</strong> <span id="editScoreTotalDisplay">-</span></p>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="currentScoreDisplay">Current Total Score</label>
+                    <input type="number" id="currentScoreDisplay" readonly class="duration-input" style="background: #f0f0f0; cursor: not-allowed;">
+                </div>
+                
+                <div class="setting-item">
+                    <label for="newScoreInput">New Total Score</label>
+                    <input type="number" id="newScoreInput" min="0" class="duration-input" placeholder="Enter new total score">
+                </div>
+                
+                <div class="setting-item">
+                    <label for="scoreChangeReason">Change Reason <span style="color: red;">*</span></label>
+                    <textarea id="scoreChangeReason" rows="3" class="duration-input" style="resize: vertical; font-family: inherit;" placeholder="Explain why the score was changed (at least 5 characters)"></textarea>
+                    <small>This information will be added to the audit log.</small>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="scoreChangedBy">Changed By <span style="color: red;">*</span></label>
+                    <input type="text" id="scoreChangedBy" class="duration-input" placeholder="Enter your name (e.g.: Admin, John, etc.)">
+                    <small>The name of the person who made this change will appear in the audit log.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveScoreBtn" class="btn-save">💾 Save</button>
+                <button id="cancelScoreBtn" class="btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Score Logs Viewer Modal -->
+    <div id="scoreLogsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>📋 Score Change Records (Audit Log)</h2>
+                <button class="close-modal" id="closeScoreLogsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">🔍 Search</label>
+                        <input type="text" id="scoreLogsSearch" class="duration-input" placeholder="Search in words, reasons or details..." style="width: 100%;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">👤 Participant</label>
+                        <select id="scoreLogsParticipantFilter" class="duration-input" style="width: 100%;">
+                            <option value="">All Participants</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                        <button id="scoreLogsSearchBtn" class="btn-save" style="height: 42px; padding: 0 20px;">Search</button>
+                        <button id="exportScoreLogsBtn" class="btn-save" style="height: 42px; padding: 0 20px; background: #28a745;">📊 Download Excel</button>
+                    </div>
+                </div>
+                
+                <div id="scoreLogsTableContainer" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                            <tr>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Date/Time</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Participant</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Action</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">Old Score</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">New Score</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">Change</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Reason/Detail</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Changed By</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scoreLogsTableBody">
+                            <tr>
+                                <td colspan="8" style="padding: 40px; text-align: center; color: #999;">
+                                    Loading...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="scoreLogsPagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div id="scoreLogsInfo" style="font-size: 13px; color: #666;">
+                        Total 0 records
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="scoreLogsPrevBtn" class="btn-cancel" style="padding: 8px 15px;" disabled>← Previous</button>
+                        <span id="scoreLogsPageInfo" style="padding: 8px 15px; background: #f0f0f0; border-radius: 6px; font-weight: 600;">Page 1</span>
+                        <button id="scoreLogsNextBtn" class="btn-save" style="padding: 8px 15px;" disabled>Next →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excel Download Options Modal -->
+    <div id="exportOptionsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" id="closeExportOptions">&times;</span>
+            <h2 style="margin-top: 0; color: #667eea;">📥 Excel Download Options</h2>
+            
+            <div style="margin: 25px 0;">
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="radio" name="exportType" value="default" checked style="margin-right: 10px;">
+                    <strong>Default Download</strong>
+                    <p style="margin: 5px 0 0 30px; color: #666; font-size: 14px;">
+                        All game data (participants, scores, game history)
+                    </p>
+                </label>
+                
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="radio" name="exportType" value="words" style="margin-right: 10px;">
+                    <strong>Participant Words</strong>
+                    <p style="margin: 5px 0 0 30px; color: #666; font-size: 14px;">
+                        Words written by participants (sorted by letter count, with validity status)
+                    </p>
+                </label>
+            </div>
+            
+            <!-- Participant selection (shown when words is selected) -->
+            <div id="participantSelectionDiv" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    📋 Select Participant:
+                </label>
+                <select id="participantSelect" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <option value="">Select participant...</option>
+                    <option value="all">Select All Participants</option>
+                </select>
+            </div>
+            
+            <!-- Game selection (shown when participant is selected) -->
+            <div id="gameSelectionDiv" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    🎮 Which Games' Words Would You Like to Download?
+                </label>
+                <div id="gameCheckboxes" style="max-height: 200px; overflow-y: auto; padding: 10px;">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+                <label style="display: block; margin-top: 10px;">
+                    <input type="checkbox" id="selectAllGames" style="margin-right: 8px;">
+                    <strong>Select All</strong>
+                </label>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button id="confirmExportBtn" class="btn-save" style="flex: 1; padding: 12px; font-size: 16px;">
+                    📥 Download
+                </button>
+                <button id="cancelExportBtn" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 16px;">
+                    ❌ Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Letters Modal -->
+    <div id="customLettersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>✏️ Edit Custom Letters</h2>
+                <button class="close-modal" id="closeCustomLettersModal">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    Edit the letters to be used in games. The default English alphabet is shown. You can add or remove any letters as needed.
+                </p>
+                
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    📝 Letters (separate with commas):
+                </label>
+                <textarea id="customLettersInput" 
+                    style="width: 100%; min-height: 150px; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 16px; resize: vertical;"
+                    placeholder="A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z"></textarea>
+                
+                <div style="margin-top: 15px; padding: 12px; background: #f0f8ff; border-left: 4px solid #667eea; border-radius: 6px;">
+                    <strong>💡 Tip:</strong> Separate letters with commas. Spaces will be automatically removed.
+                    <br>Example: <code>A,B,C,X,Q</code>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="resetToDefaultLettersBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        🔄 Reset to Default
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveCustomLettersBtn" class="btn-save">💾 Save</button>
+                <button id="cancelCustomLettersBtn" class="btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Scoring Modal -->
+    <div id="customScoringModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>⚙️ Custom Scoring System</h2>
+                <button class="close-modal" id="closeCustomScoringModal">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    You can set separate scores and acceptance settings for each word length.
+                    Default: 2-letter words = 2 points, 3-letter = 3 points, etc.
+                </p>
+                
+                <div id="scoringRulesContainer" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- For each of 2-8 letters -->
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled2" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled2" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            2-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints2" min="0" max="100" value="2" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled3" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled3" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            3-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints3" min="0" max="100" value="3" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled4" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled4" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            4-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints4" min="0" max="100" value="4" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled5" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled5" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            5-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints5" min="0" max="100" value="5" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled6" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled6" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            6-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints6" min="0" max="100" value="6" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled7" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled7" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            7-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints7" min="0" max="100" value="7" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled8" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled8" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            8-Letter Word
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Points:</span>
+                            <input type="number" id="scoringPoints8" min="0" max="100" value="8" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 12px; background: #fff3cd; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                    <strong>⚠️ Important:</strong> Words of unchecked lengths will not be accepted!
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="resetToDefaultScoringBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        🔄 Reset to Default
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveCustomScoringBtn" class="btn-save">💾 Save</button>
+                <button id="cancelCustomScoringBtn" class="btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Box-Based Letter Output Modal -->
+    <div id="boxLettersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>📦 Box-Based Letter Output</h2>
+                <button class="close-modal" id="closeBoxLettersModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h3 style="margin: 0 0 10px 0; color: #92400e;">ℹ️ How Does It Work?</h3>
+                    <p style="margin: 0; color: #78350f; line-height: 1.5;">
+                        <strong>Orange boxes</strong> (vowels) and <strong>purple boxes</strong> (consonants) define which letters can appear. Click each box to select which letters can appear in that box.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Vowel Letter Boxes (Orange) -->
+                    <div>
+                        <h3 style="color: #ea580c; margin-bottom: 10px;">🟠 Vowel Letter Boxes (3 boxes)</h3>
+                        <div id="vowelBoxes" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <!-- Will be dynamically added by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Consonant Letter Boxes (Purple) -->
+                    <div>
+                        <h3 style="color: #7c3aed; margin-bottom: 10px;">🟣 Consonant Letter Boxes (5 boxes)</h3>
+                        <div id="consonantBoxes" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <!-- Will be dynamically added by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 6px;">
+                    <strong>💡 Tip:</strong> Letters inside boxes are randomly selected during the game. 
+                    Empty boxes use the default letter distribution.
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveBoxLettersBtn" class="btn-save">💾 Save</button>
+                <button id="cancelBoxLettersBtn" class="btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Possible Words Modal -->
+    <div id="possibleWordsModal" class="modal" style="display: none; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+        <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+            <div class="modal-header">
+                <h2 style="font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">📖 Possible Words</h2>
+                <button id="closePossibleWordsModal" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                <div id="wordsLoadingContainer" style="text-align: center; padding: 40px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                    <div style="font-size: 24px; margin-bottom: 10px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">⏳ Searching for words...</div>
+                    <div style="color: #999; font-size: 14px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">Please wait...</div>
+                </div>
+                
+                <div id="wordsResultContainer" style="display: none; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                    <!-- Summary info -->
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                            <span id="totalWordsCount">0</span> Words
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                            Total number of words that can be formed from the available letters
+                        </div>
+                    </div>
+                    
+                    <!-- Words grouped by letter count -->
+                    <div id="wordsGroupedContainer" style="font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;"></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                <button id="closePossibleWordsBtn" class="btn-cancel">❌ Close</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="admin.js"></script>
+</body>
+</html>

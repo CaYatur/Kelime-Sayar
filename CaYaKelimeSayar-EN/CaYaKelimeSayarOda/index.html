@@ -1,0 +1,518 @@
+<!--Developed by CaYaDev - https://cayadev.com -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.75, maximum-scale=5.0, user-scalable=yes">
+    <title>Word Counter - CaYaDev</title>
+    <meta name="description" content="CaYaDev Word Counter - Multiplayer word building game. Create a room, join, and form words with letters!">
+    <link rel="icon" type="image/svg+xml" href="./CaYaDevSite.svg">
+    <link rel="stylesheet" href="styles.css?v=9">
+</head>
+<body>
+    <!-- Background Letters -->
+    <div class="background-letters" id="backgroundLetters"></div>
+
+    <!-- Top Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <div class="logo-container">
+                <img src="../../css/CaYaDev.svg" style="position: absolute; top: 20px; cursor: pointer;" alt="CaYaDev Logo" class="logo" id="cayadevLogo">
+            </div>
+            <div class="room-title-header" id="roomTitleHeader" style="display: none;"></div>
+            <div class="nav-title">Word Counter</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Main Menu (Start Screen) -->
+        <div id="mainMenu" class="main-menu">
+            <h1 class="title">WORD COUNTER</h1>
+            <div class="menu-buttons">
+                <button class="menu-btn create-room-btn" id="createRoomBtn">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-text">Create Room</span>
+                </button>
+                <button class="menu-btn join-room-btn" id="joinRoomBtn">
+                    <span class="btn-icon">🚪</span>
+                    <span class="btn-text">Join Room</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Game Screen (Initially hidden) -->
+        <div id="gameScreen" class="game-screen" style="display: none;">
+            <!-- Corner Logos -->
+            <div class="corner-logos">
+                <img id="leftLogo" class="corner-logo left-logo" alt="Left Logo" style="display: none;">
+                <img id="rightLogo" class="corner-logo right-logo" alt="Right Logo" style="display: none;">
+            </div>
+            
+            <!-- Title and Room Information -->
+            <div class="game-header">
+                <h1 class="title" id="gameTitle">WORD COUNTER</h1>
+                <div class="room-info-bar">
+                    <span class="room-code-display">Room: <strong id="currentRoomCode">-</strong></span>
+                    <span class="participant-name-display">Player: <strong id="currentParticipantName">-</strong></span>
+                </div>
+            </div>
+
+            <!-- Timer (Top, large) -->
+            <div class="game-timer">
+                <div class="timer-display-large">
+                    <span id="gameMinutes">00</span>:<span id="gameSeconds">00</span>
+                </div>
+                <div class="timer-status" id="timerStatus">Game Not Started</div>
+            </div>
+            
+            <br>
+            <!-- Letter Cards -->
+            <div class="cards-container" id="cardsContainer">
+                <!-- Will be filled by JavaScript - initially as ? -->
+            </div>
+
+            <br>
+            <!-- Word Creation Area -->
+            <div class="word-building-area">
+                <h3>Build Word:</h3>
+                <div class="selected-letters" id="selectedLetters">
+                    <span class="placeholder-text">Click letters to build a word...</span>
+                </div>
+                <div class="word-actions">
+                    <button class="btn-submit" id="submitWordBtn" disabled>✓ Submit</button>
+                    <div class="secondary-actions">
+                        <button class="btn-undo" id="undoBtn" disabled>↶ Undo</button>
+                        <button class="btn-clear" id="clearBtn" disabled>✕ Clear</button>
+                    </div>
+                </div>
+                <div class="word-result" id="wordResult"></div>
+            </div>
+
+            <!-- Game Status Messages -->
+            <div class="game-status-message" id="gameStatusMessage" style="display: none;">
+                <p id="statusMessageText">Waiting for game...</p>
+            </div>
+            
+            <!-- Game Results Screen -->
+            <div class="game-results-screen" id="gameResultsScreen">
+                <div class="results-container">
+                    <button class="close-results-btn" id="closeResultsBtn">&times;</button>
+                    <h2>🏆 GAME OVER!</h2>
+                    <div class="results-table" id="resultsTable">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                    <div class="countdown-message" id="countdownMessage">
+                        <p>Returning to participant selection in <strong id="countdownSeconds">60</strong> seconds...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Game Paused (Cannot be closed) -->
+    <div id="pauseModal" class="modal" style="display: none;">
+        <div class="modal-content pause-modal">
+            <div class="pause-icon">⏸️</div>
+            <h2>GAME PAUSED</h2>
+            <p>Game has been paused by the admin.</p>
+            <p>Please wait for the game to resume...</p>
+            <div class="pause-animation">
+                <div class="pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Create Room (4 Steps) -->
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content create-room-modal">
+            <span class="close" id="closeCreateRoom">&times;</span>
+            <h2>🎮 Create New Room</h2>
+            
+            <!-- Step indicator -->
+            <div class="steps-indicator">
+                <div class="step active" data-step="1">1. Duration</div>
+                <div class="step" data-step="2">2. Participants</div>
+                <div class="step" data-step="3">3. Images</div>
+                <div class="step" data-step="4">4. Complete</div>
+            </div>
+            
+            <!-- Step 1: Duration Selection -->
+            <div class="step-content" data-step="1">
+                <div class="form-group">
+                    <label>Room Title</label>
+                    <input type="text" id="roomTitle" placeholder="e.g.: Word Competition..." maxlength="50">
+                    <small>* Will appear on game screen and scoreboard (Optional)</small>
+                </div>
+                <div class="form-group">
+                    <label>Room Active Duration (Hours)</label>
+                    <input type="range" id="durationSlider" min="2" max="168" value="24" step="1">
+                    <div class="duration-display">
+                        <span id="durationValue">24</span> hours (<span id="durationDays">1</span> days)
+                    </div>
+                </div>
+                <button class="btn-next" id="step1Next">Next</button>
+            </div>
+            
+            <!-- Step 2: Participants -->
+            <div class="step-content" data-step="2" style="display: none;">
+                <div class="form-group">
+                    <label>Participant Names</label>
+                    
+                    <!-- Bulk Add Option -->
+                    <div style="margin-bottom: 15px;">
+                        <button type="button" class="btn-toggle-bulk" id="toggleBulkInputBtn">
+                            📋 Bulk Add (Each line = 1 participant)
+                        </button>
+                    </div>
+                    
+                    <!-- Bulk add textarea (initially hidden) -->
+                    <div id="bulkInputContainer" style="display: none; margin-bottom: 15px;">
+                        <textarea 
+                            id="bulkParticipantInput" 
+                            placeholder="Enter one name per line:&#10;John&#10;Jane&#10;Bob&#10;..."
+                            class="bulk-participant-textarea"
+                        ></textarea>
+                        <button type="button" class="btn-apply-bulk" id="applyBulkBtn">
+                            ✓ Apply
+                        </button>
+                    </div>
+                    
+                    <div class="participants-list" id="participantsList">
+                        <div class="participant-input">
+                            <input type="text" placeholder="Participant 1">
+                            <button class="btn-remove-participant" disabled>×</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-participant" id="addParticipantBtn">+ Add Participant</button>
+                </div>
+                <div class="step-buttons">
+                    <button class="btn-back" id="step2Back">Back</button>
+                    <button class="btn-next" id="step2Next">Next</button>
+                </div>
+            </div>
+            
+            <!-- Step 3: Images -->
+            <div class="step-content" data-step="3" style="display: none;">
+                <div class="form-group">
+                    <label>Logo Images (Will appear in corners of game screen)</label>
+                    <div class="image-uploads">
+                        <div class="image-upload-box">
+                            <label>Top Left Logo</label>
+                            <input type="file" id="leftImage" accept="image/*">
+                            <div class="image-preview" id="leftImagePreview">
+                                <span class="upload-placeholder">📷</span>
+                            </div>
+                        </div>
+                        <div class="image-upload-box">
+                            <label>Top Right Logo</label>
+                            <input type="file" id="rightImage" accept="image/*">
+                            <div class="image-preview" id="rightImagePreview">
+                                <span class="upload-placeholder">📷</span>
+                            </div>
+                        </div>
+                    </div>
+                    <small>* Maximum 5MB, will be automatically resized to 150x150px</small>
+                </div>
+                <div class="step-buttons">
+                    <button class="btn-back" id="step3Back">Back</button>
+                    <button class="btn-next" id="step3Next">Create Room</button>
+                </div>
+            </div>
+            
+            <!-- Step 4: Completed (Admin Panel) -->
+            <div class="step-content" data-step="4" style="display: none;">
+                <div class="room-created-success">
+                    <div class="success-icon">✅</div>
+                    <h3>Room Created Successfully!</h3>
+                    <div class="room-info">
+                        <div class="info-item">
+                            <label>Room Code:</label>
+                            <div class="code-display">
+                                <span id="createdRoomCode">--------</span>
+                                <button class="btn-copy" id="copyRoomCodeBtn" title="Copy">📋</button>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Admin Password:</label>
+                            <div class="code-display">
+                                <span id="adminPassword">--------</span>
+                                <button class="btn-copy" id="copyAdminPasswordBtn" title="Copy">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="warning-text">⚠️ Save the admin password! It cannot be displayed again.</p>
+                    <button class="btn-admin-panel" id="goToAdminPanelBtn">Go to Admin Panel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Join Room -->
+    <div id="joinRoomModal" class="modal">
+        <div class="modal-content join-room-modal">
+            <span class="close" id="closeJoinRoom">&times;</span>
+            <h2>🚪 Join Room</h2>
+            
+            <!-- Room Code Entry -->
+            <div id="roomCodeEntry" class="room-code-entry">
+                <div class="form-group">
+                    <label>8-Digit Code</label>
+                    <input type="text" id="roomCodeInput" placeholder="Room Code or Admin Password" maxlength="8">
+                    <small>* Enter room code to join game, or admin password to access admin panel</small>
+                </div>
+                <button class="btn-submit" id="joinRoomSubmitBtn">Continue</button>
+            </div>
+            
+            <!-- Participant Selection -->
+            <div id="participantSelection" class="participant-selection" style="display: none;">
+                <h3>Select Participant</h3>
+                <div class="participant-buttons" id="participantButtons">
+                    <!-- Will be filled by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Word Check -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content search-modal">
+            <span class="close" id="closeSearch">&times;</span>
+            <h2>🔍 Word Check</h2>
+            <div class="search-content">
+                <div class="input-group">
+                    <input type="text" id="modalWordInput" placeholder="Enter a word..." maxlength="8" autocomplete="off">
+                </div>
+                <div id="modalCheckResult" class="modal-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Time's Up -->
+    <div id="timeUpModal" class="modal time-up-modal">
+        <div class="modal-content time-up-content">
+            <div class="time-up-icon">⏰</div>
+            <h2>TIME'S UP!</h2>
+            <p>Game is over. You can form and check words with the letters.</p>
+            
+            <!-- Letters -->
+            <div class="time-up-letters" id="timeUpLetters">
+                <!-- Will be filled by JavaScript -->
+            </div>
+            
+            <!-- Word Check -->
+            <div class="time-up-search">
+                <div class="input-group">
+                    <input type="text" id="timeUpWordInput" placeholder="Enter a word to check..." maxlength="8" autocomplete="off">
+                </div>
+                <div id="timeUpCheckResult" class="time-up-result"></div>
+            </div>
+            
+            <div class="time-up-buttons">
+                <button class="btn-new-game" id="newGameBtn">New Game</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Confirmation (Stop Game) -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="confirm-icon">⚠️</div>
+            <h2>Are You Sure You Want to Stop the Game?</h2>
+            <p>A new game will be started and the current game will be reset.</p>
+            <div class="confirm-buttons">
+                <button class="btn-confirm-yes" id="confirmYes">Yes, Stop</button>
+                <button class="btn-confirm-no" id="confirmNo">No, Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Settings -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content settings-modal">
+            <span class="close" id="closeSettings">&times;</span>
+            <h2>⚙️ Game Settings</h2>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>Game Duration</label>
+                    <div class="time-inputs-row">
+                        <div class="time-input-box">
+                            <label for="minutesInput">Minutes</label>
+                            <div class="time-input-group">
+                                <button class="time-btn" id="decreaseMinutes">-</button>
+                                <input type="number" id="minutesInput" min="0" value="10">
+                                <button class="time-btn" id="increaseMinutes">+</button>
+                            </div>
+                        </div>
+                        <div class="time-separator">:</div>
+                        <div class="time-input-box">
+                            <label for="secondsInput">Seconds</label>
+                            <div class="time-input-group">
+                                <button class="time-btn" id="decreaseSeconds">-</button>
+                                <input type="number" id="secondsInput" min="0" max="59" value="0">
+                                <button class="time-btn" id="increaseSeconds">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-presets">
+                        <button class="preset-btn" data-minutes="3" data-seconds="0">3 min</button>
+                        <button class="preset-btn" data-minutes="5" data-seconds="0">5 min</button>
+                        <button class="preset-btn" data-minutes="10" data-seconds="0">10 min</button>
+                        <button class="preset-btn" data-minutes="15" data-seconds="0">15 min</button>
+                        <button class="preset-btn" data-minutes="0" data-seconds="30">30 sec</button>
+                    </div>
+                </div>
+                <button class="save-settings-btn" id="saveSettings">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="startSound" preload="auto">
+        <source src="sounds/start.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="stopSound" preload="auto">
+        <source src="sounds/stop.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="endSound" preload="auto">
+        <source src="sounds/end.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="room.js?v=4"></script>
+    <!-- FPS Monitor disabled -->
+    <!-- <script src="fps-monitor.js?v=1"></script> -->
+    <!-- app.js will only run on game screen -->
+    <script>
+        // Load app.js only when the game screen is shown
+        let appJsLoaded = false;
+        function loadGameScript() {
+            if (!appJsLoaded) {
+                const script = document.createElement('script');
+                script.src = 'app.js?v=2';
+                document.body.appendChild(script);
+                appJsLoaded = true;
+            }
+        }
+
+        // Create background letters (from room.js)
+        const VOWELS = ['A', 'E', 'I', 'O', 'U'];
+        const CONSONANTS = ['B', 'C', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'V', 'W', 'X', 'Y', 'Z'];
+        
+        function createBackgroundLetters() {
+            const container = document.getElementById('backgroundLetters');
+            const allLetters = [...VOWELS, ...CONSONANTS];
+            const letterCount = 20;
+            
+            for (let i = 0; i < letterCount; i++) {
+                const letter = document.createElement('div');
+                letter.className = 'bg-letter';
+                letter.textContent = allLetters[Math.floor(Math.random() * allLetters.length)];
+                letter.style.left = Math.random() * 100 + '%';
+                letter.style.fontSize = (Math.random() * 80 + 40) + 'px';
+                letter.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                letter.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(letter);
+            }
+        }
+        
+        createBackgroundLetters();
+        
+    </script>
+
+    <!-- Return to Homepage Confirmation Modal -->
+    <div id="exitGameConfirmModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 style="margin-top: 0; color: #667eea;">⚠️ Do You Want to Leave the Game?</h2>
+            <p style="color: #666; margin: 20px 0;">
+                The game is still in progress. Are you sure you want to return to the homepage?
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+                <button id="confirmExitGame" class="btn-submit" style="background: #f44336;">Yes, Leave</button>
+                <button id="cancelExitGame" class="btn-clear">No, I Want to Stay</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Button -->
+    <button id="fullscreenBtn" class="fullscreen-btn" title="Fullscreen">⛶</button>
+    
+    <script>
+        // Fullscreen functionality
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        function updateFullscreenButton() {
+            if (document.fullscreenElement) {
+                // Hide button when in fullscreen
+                fullscreenBtn.style.display = 'none';
+            } else {
+                // Show button in normal mode
+                fullscreenBtn.style.display = 'flex';
+            }
+        }
+        
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Fullscreen error:', err);
+                });
+            }
+        });
+        
+        // Listen for fullscreen changes
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        
+        // Update button when page loads
+        updateFullscreenButton();
+
+        // 🔍 Responsive zoom adjustment
+        let lastZoom = window.devicePixelRatio;
+        
+        function calculateOptimalZoom() {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            // Aggressive scaling below 800x500
+            if (viewportWidth <= 800 && viewportHeight <= 500) {
+                const zoomWidth = Math.max(0.75, viewportWidth / 1024);
+                const zoomHeight = Math.max(0.75, viewportHeight / 720);
+                return Math.min(zoomWidth, zoomHeight);
+            }
+            
+            // Medium scaling below 1024x768
+            if (viewportWidth <= 1024 && viewportHeight <= 768) {
+                const zoomWidth = Math.max(0.85, viewportWidth / 1024);
+                const zoomHeight = Math.max(0.85, viewportHeight / 720);
+                return Math.min(zoomWidth, zoomHeight);
+            }
+            
+            return 1;
+        }
+        
+        function applyOptimalZoom() {
+            const optimalZoom = calculateOptimalZoom();
+            const htmlElement = document.documentElement;
+            const baseFontSize = 16;
+            const newFontSize = baseFontSize * optimalZoom;
+            
+            htmlElement.style.fontSize = newFontSize + 'px';
+            console.log(`📐 Optimal zoom: ${(optimalZoom * 100).toFixed(0)}% (${window.innerWidth}x${window.innerHeight})`);
+        }
+        
+        function handleZoomChange() {
+            const currentZoom = window.devicePixelRatio;
+            if (currentZoom !== lastZoom) {
+                lastZoom = currentZoom;
+                document.body.style.transition = 'all 0.15s ease-out';
+                setTimeout(() => { document.body.style.transition = ''; }, 150);
+                console.log(`🔍 Zoom level: ${(currentZoom * 100).toFixed(0)}%`);
+            }
+            applyOptimalZoom();
+        }
+        
+        // Apply optimal zoom when page loads
+        window.addEventListener('load', applyOptimalZoom);
+        window.addEventListener('resize', handleZoomChange);
+        
+        // Check zoom when page loads
+        handleZoomChange();
+    </script>
+</body>
+</html>

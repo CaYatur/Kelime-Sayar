@@ -1,0 +1,23 @@
+{
+  "server": {
+    "host": "localhost",
+    "port": 2002,
+    "baseUrl": "http://localhost:2002"
+  },
+  "game": {
+    "name": "Word Counter",
+    "language": "en",
+    "minWordLength": 2,
+    "maxWordLength": 8,
+    "vowelCount": 3,
+    "consonantCount": 5,
+    "dictionaryPath": "CaYaKelimeSayarOda/Dictionary/dictionary-English.jsonl"
+  },
+  "redirects": {
+    "homepage": "https://CaYaDev.com",
+    "gamePath": "/webcontent/CaYaKelimeSayarOda/game/",
+    "scoreboardPath": "/webcontent/CaYaKelimeSayarOda/game/scoreboard.html",
+    "adminPath": "/webcontent/CaYaKelimeSayarOda/game/admin.html",
+    "basicCheckPath": "/webcontent/CaYaKelimeSayarOda/game/basiccheck/"
+  }
+}
