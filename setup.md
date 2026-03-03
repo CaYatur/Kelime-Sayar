@@ -24,6 +24,10 @@
    You must run `git lfs pull` after cloning!  
    If you skip this step, the dictionary file will be just a small placeholder (~132 bytes) and the game will not be able to validate words or function properly.
 
+After running this command, make sure the downloaded file is located in its original directory:
+CaYaKelimeSayar-EN/CaYaKelimeSayarOda/Dictionary/
+Do not move the file to another location. The game expects the dictionary file to be in this exact folder.
+
 3. Install dependencies (adjust based on your tech stack):
    ```
    # Node.js backend (example):
