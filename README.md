@@ -1,11 +1,9 @@
 
 
 ### Proje Sayfaları (Project Pages):
---
 
 > 🔗 **TR -** [https://cayadev.com/project/kelime-sayar](https://cayadev.com/project/kelime-sayar)
 
---
 > 🔗 **EN -**  [https://cayadev.com/project/caya-english-word-counter](https://cayadev.com/project/caya-english-word-counter)
 
 -----------
