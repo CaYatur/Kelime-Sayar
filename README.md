@@ -370,12 +370,15 @@ Oyunun hedefi basit ama etkili: **Kelimelerle oynamak, öğrenmek ve yarışmak!
 
 
 
+----------------------------------------------
 
 
 
-🔗 **Project Page:** [https://cayadev.com/project/caya-english-word-counter](https://cayadev.com/project/caya-english-word-counter)
+
 
 ## Word Counter (EN Version)
+
+🔗 **Project Page:** [https://cayadev.com/project/caya-english-word-counter](https://cayadev.com/project/caya-english-word-counter)
 
 - **Word Counter** is a fast-paced, educational word game where players use **randomly generated letters** to form **valid English words** within a fixed time limit. It starts as a single-player experience and scales into **multiplayer rooms and tournament-style sessions**, supported by professional admin and reporting tools in a web application.
 
