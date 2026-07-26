@@ -1,2 +1,2 @@
 CaYaKelimeSayar-EN/CaYaKelimeSayarOda/Dictionary/dictionary-English.jsonl.bz2 filter=lfs diff=lfs merge=lfs -text
-CaYaKelimeSayarOda/TDK/gts.json filter=lfs diff=lfs merge=lfs -text
+CaYaKelimeSayar-TR/CaYaKelimeSayarOda/TDK/gts.json filter=lfs diff=lfs merge=lfs -text
