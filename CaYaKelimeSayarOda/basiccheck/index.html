@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelime Kontrol - CaYaDev</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #dc2626;
+            --primary-dark: #b91c1c;
+            --primary-light: #ef4444;
+            --success: #48bb78;
+            --danger: #f56565;
+            --bg-dark: #111827;
+            --bg-medium: #1f2937;
+            --bg-light: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --border-color: #4b5563;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-medium) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Scroll bar stilleri */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+
+        /* Firefox scrollbar */
+        * {
+            scrollbar-color: var(--primary) var(--bg-dark);
+            scrollbar-width: thin;
+        }
+
+        .top-nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-dark);
+            height: 70px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            border-bottom: 2px solid var(--primary);
+        }
+
+        .nav-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            height: 100%;
+            padding: 0 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            justify-content: space-between;
+        }
+
+        .logo-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            transition: transform 0.3s ease;
+        }
+
+        .logo {
+            width: 150px;
+            height: 150px;
+        }
+
+        .nav-title {
+            color: var(--primary);
+            font-weight: 700;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+            margin-left: auto;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 90px 1rem 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 1rem;
+            background: transparent;
+            border-radius: 0;
+            border: none;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0;
+            color: var(--primary);
+        }
+
+        .header p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .section {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        #letterInput {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.75rem;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+        }
+
+        #letterInput:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        #searchBtn {
+            padding: 0.75rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 120px;
+        }
+
+        #searchBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        #searchBtn:active {
+            transform: translateY(0);
+        }
+
+        .info-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.75rem;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 0.5rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .words-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .word-card {
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .word-card:hover {
+            border-color: var(--primary);
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .word-card input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: var(--primary);
+        }
+
+        .word-text {
+            flex: 1;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .word-card.checked {
+            border-color: var(--success);
+            background: rgba(72, 187, 120, 0.1);
+        }
+
+        .category-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .category-header {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--primary);
+            padding: 0.75rem 0;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .category-words {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .empty-message {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .submitted-section {
+            background: rgba(72, 187, 120, 0.1);
+            border: 1px dashed var(--success);
+            border-radius: 8px;
+        }
+
+        .submitted-words {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .submitted-word {
+            background: linear-gradient(135deg, var(--success), #38a169);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-weight: 600;
+            position: relative;
+            animation: slideIn 0.3s ease-out;
+            transition: all 0.2s ease;
+        }
+
+        .submitted-word:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
+        }
+
+        .submitted-word:active {
+            transform: scale(0.95);
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .submitted-word::before {
+            content: '✓ ';
+            margin-right: 0.5rem;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-card {
+            background: var(--bg-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .error-message {
+            background: rgba(245, 101, 101, 0.1);
+            border: 1px solid var(--danger);
+            color: #fc8181;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .success-message {
+            background: rgba(72, 187, 120, 0.1);
+            border: 1px solid var(--success);
+            color: #9ae6b4;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        /* Ayarlar Modal */
+        .settings-btn {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            z-index: 900;
+        }
+
+        .settings-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 901;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal {
+            background: var(--bg-medium);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close-btn:hover {
+            color: var(--text-primary);
+        }
+
+        .setting-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .setting-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 28px;
+            background: var(--bg-dark);
+            border: 2px solid var(--border-color);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .toggle-switch.active {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle-switch.active::after {
+            left: 26px;
+        }
+
+        .setting-description {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .submitted-words.list-mode {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .submitted-words.list-mode .submitted-word {
+            width: 100%;
+            padding: 0.75rem;
+            text-align: left;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            #letterInput {
+                min-width: unset;
+            }
+
+            #searchBtn {
+                width: 100%;
+            }
+
+            .words-container {
+                grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+                gap: 0.5rem;
+            }
+
+            .word-card {
+                padding: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Üst Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <a href="/" class="logo-link" title="CaYaDev Ana Sayfa">
+                <img src="../../../css/CaYaDev.svg" alt="CaYaDev Logo" class="logo">
+            </a>
+            <div class="nav-title">Kelime Kontrol</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Başlık -->
+        <div class="header">
+            <h1>📚 Kelime Kontrol</h1>
+            <p>Verilen harflerden oluşturulabilecek kelimeleri bulun</p>
+        </div>
+
+        <!-- Harf Giriş -->
+        <div class="section">
+            <div class="section-title">🔤 Harfleri Girin</div>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="letterInput" 
+                    placeholder="Örn: aeiprtkl veya a,e,i,p,r,t,k,l (2-20 harf)"
+                    autocomplete="off"
+                    autocorrect="off"
+                    autocapitalize="off"
+                >
+                <button id="searchBtn">Ara</button>
+            </div>
+            <div class="info-text">
+                💡 Harfleri virgülsüz (aeiprtkl) veya virgülle ayırarak (a,e,i,p,r,t,k,l) girin (min 2, max 20 harf)
+            </div>
+        </div>
+
+        <!-- Mesaj Alanı -->
+        <div id="messageContainer"></div>
+
+        <!-- Bulunan Kelimeler -->
+        <div class="section" id="resultsSection" style="display: none;">
+            <div class="stats" id="stats"></div>
+            <br/>
+            <br/>
+            <div class="section-title">✨ Bulunan Kelimeler</div>
+            <div class="words-container" id="wordsContainer"></div>
+        </div>
+
+        <!-- Gönderilen Kelimeler -->
+        <div class="section submitted-section" id="submittedSection" style="display: none;">
+            <div class="section-title">📤 Gönderilen Kelimeler</div>
+            <div class="submitted-words" id="submittedWords"></div>
+        </div>
+    </div>
+
+    <!-- Ayarlar Butonu -->
+    <button class="settings-btn" id="settingsBtn">⚙️</button>
+
+    <!-- Ayarlar Modal -->
+    <div class="modal-overlay" id="settingsOverlay">
+        <div class="settings-modal">
+            <div class="modal-header">
+                <h2>Ayarlar</h2>
+                <button class="close-btn" id="closeSettingsBtn">✕</button>
+            </div>
+
+            <!-- Dokunduğunu Yok Et -->
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>🗑️ Dokunduğunu Yok Et</span>
+                    <div class="toggle-switch" id="deleteOnTouchToggle"></div>
+                </div>
+                <div class="setting-description">
+                    Seçtiğiniz kelimeler üzerine tıkladığınızda silinsin
+                </div>
+            </div>
+
+            <!-- Kelime Listeleme Modu -->
+            <div class="setting-item">
+                <div class="setting-label">
+                    <span>📋 Liste Modu</span>
+                    <div class="toggle-switch" id="listModeToggle"></div>
+                </div>
+                <div class="setting-description">
+                    Gönderilen kelimeleri alt alta listele
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PATH_PREFIX = window.location.pathname.split('/webcontent/')[0] || '';
+        const API_BASE = window.location.origin + PATH_PREFIX;
+        let currentLetters = [];
+        let submittedWords = new Set();
+        
+        // Ayarlar (çerezlerden yükle)
+        let settings = {
+            deleteOnTouch: false,
+            listMode: true  // Varsayılan olarak açık
+        };
+
+        // Ayarları yükle
+        function loadSettings() {
+            const saved = localStorage.getItem('basiccheckSettings');
+            if (saved) {
+                settings = JSON.parse(saved);
+            }
+            applySettings();
+        }
+
+        // Ayarları kaydet
+        function saveSettings() {
+            localStorage.setItem('basiccheckSettings', JSON.stringify(settings));
+        }
+
+        // Ayarları uygula
+        function applySettings() {
+            // Toggle switch'leri güncelle
+            const deleteToggle = document.getElementById('deleteOnTouchToggle');
+            const listToggle = document.getElementById('listModeToggle');
+            
+            if (settings.deleteOnTouch) {
+                deleteToggle.classList.add('active');
+            } else {
+                deleteToggle.classList.remove('active');
+            }
+            
+            if (settings.listMode) {
+                listToggle.classList.add('active');
+            } else {
+                listToggle.classList.remove('active');
+            }
+
+            // Liste modunu uygula
+            const submittedWordsDiv = document.getElementById('submittedWords');
+            if (settings.listMode) {
+                submittedWordsDiv.classList.add('list-mode');
+            } else {
+                submittedWordsDiv.classList.remove('list-mode');
+            }
+        }
+
+        // Ayarlar modal
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsOverlay = document.getElementById('settingsOverlay');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const deleteOnTouchToggle = document.getElementById('deleteOnTouchToggle');
+        const listModeToggle = document.getElementById('listModeToggle');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsOverlay.classList.add('active');
+        });
+
+        closeSettingsBtn.addEventListener('click', () => {
+            settingsOverlay.classList.remove('active');
+        });
+
+        settingsOverlay.addEventListener('click', (e) => {
+            if (e.target === settingsOverlay) {
+                settingsOverlay.classList.remove('active');
+            }
+        });
+
+        deleteOnTouchToggle.addEventListener('click', () => {
+            settings.deleteOnTouch = !settings.deleteOnTouch;
+            saveSettings();
+            applySettings();
+        });
+
+        listModeToggle.addEventListener('click', () => {
+            settings.listMode = !settings.listMode;
+            saveSettings();
+            applySettings();
+            updateSubmittedWords();
+        });
+
+        // Türkçe karakterler için uppercase dönüşümü
+        function turkishToUpperCase(str) {
+            const turkishMap = {
+                'i': 'İ', 'ı': 'I', 'ş': 'Ş', 'ç': 'Ç', 'ğ': 'Ğ', 'ü': 'Ü', 'ö': 'Ö',
+                'I': 'I', 'İ': 'İ', 'Ş': 'Ş', 'Ç': 'Ç', 'Ğ': 'Ğ', 'Ü': 'Ü', 'Ö': 'Ö'
+            };
+            return str.split('').map(char => turkishMap[char] !== undefined ? turkishMap[char] : char.toUpperCase()).join('');
+        }
+
+        // Enter tuşu
+        document.getElementById('letterInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                searchWords();
+            }
+        });
+
+        // Arama butonu
+        document.getElementById('searchBtn').addEventListener('click', searchWords);
+
+        async function searchWords() {
+            const input = document.getElementById('letterInput').value.trim();
+            const messageContainer = document.getElementById('messageContainer');
+
+            messageContainer.innerHTML = '';
+
+            // Validasyon
+            if (!input) {
+                messageContainer.innerHTML = '<div class="error-message">⚠️ Lütfen en az bir harf girin!</div>';
+                return;
+            }
+
+            // Harfleri ayıkla (virgül opsiyonel: abc veya a,b,c)
+            let letters = [];
+            if (input.includes(',') || input.includes(' ')) {
+                // Virgül veya boşlukla ayrılmışsa
+                letters = input
+                    .split(/[\s,]+/)
+                    .map(h => h.trim())
+                    .filter(h => h.length >= 1)
+                    .map(h => turkishToUpperCase(h))
+                    .filter(h => /^[A-ZÇĞİÖŞÜ]$/.test(h));
+            } else {
+                // Virgülsüzse her karakteri ayır
+                letters = input
+                    .split('')
+                    .map(h => turkishToUpperCase(h))
+                    .filter(h => /^[A-ZÇĞİÖŞÜ]$/.test(h));
+            }
+
+            if (letters.length < 2) {
+                messageContainer.innerHTML = '<div class="error-message">⚠️ En az 2 harf girin!</div>';
+                return;
+            }
+
+            if (letters.length > 20) {
+                messageContainer.innerHTML = '<div class="error-message">⚠️ En fazla 20 harf girebilirsiniz!</div>';
+                return;
+            }
+
+            currentLetters = letters;
+
+            // Yükleme göster
+            const resultsSection = document.getElementById('resultsSection');
+            const wordsContainer = document.getElementById('wordsContainer');
+            wordsContainer.innerHTML = '<div class="loading"><div class="loading-spinner"></div><p>Kelimeler aranıyor...</p></div>';
+            resultsSection.style.display = 'block';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/basiccheck/find-words`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ letters })
+                });
+
+                if (!response.ok) throw new Error('API hatası');
+                const data = await response.json();
+
+                if (!data.success) {
+                    wordsContainer.innerHTML = '<div class="empty-message">❌ ' + (data.error || 'Kelime bulunamadı') + '</div>';
+                    return;
+                }
+
+                const words = data.words || [];
+
+                if (words.length === 0) {
+                    wordsContainer.innerHTML = '<div class="empty-message">😅 Bu harflerden kelime bulunamadı</div>';
+                    return;
+                }
+
+                // Gönderilen kelimeleri sıfırla
+                submittedWords.clear();
+                updateSubmittedWords();
+
+                // Kelimeleri harf sayısına göre grupla (çok → az)
+                const groupedWords = {};
+                words.forEach(word => {
+                    const len = word.length;
+                    if (!groupedWords[len]) groupedWords[len] = [];
+                    groupedWords[len].push(word);
+                });
+
+                // Sıralamayı azalan olarak yap
+                const sortedLengths = Object.keys(groupedWords).map(Number).sort((a, b) => b - a);
+
+                // HTML oluştur
+                let html = '';
+                sortedLengths.forEach(len => {
+                    const groupWords = groupedWords[len];
+                    html += `
+                        <div class="category-section">
+                            <div class="category-header">${len} HARF (${groupWords.length})</div>
+                            <div class="category-words">
+                                ${groupWords.map(word => `
+                                    <label class="word-card" data-word="${word}">
+                                        <input type="checkbox" value="${word}" onchange="toggleWord(this)">
+                                        <span class="word-text">${word}</span>
+                                    </label>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                wordsContainer.innerHTML = html;
+
+                // İstatistikler
+                document.getElementById('stats').innerHTML = `
+                    <div class="stat-card">
+                        <div class="stat-value">${words.length}</div>
+                        <div class="stat-label">Kelime Bulundu</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">${letters.length}</div>
+                        <div class="stat-label">Harf Kullanıldı</div>
+                    </div>
+                `;
+
+            } catch (error) {
+                console.error('Hata:', error);
+                wordsContainer.innerHTML = '<div class="empty-message">❌ Bir hata oluştu. Lütfen tekrar deneyin.</div>';
+            }
+        }
+
+        function toggleWord(checkbox) {
+            const word = checkbox.value;
+            const card = checkbox.closest('.word-card');
+            const categorySection = card.closest('.category-section');
+            const categoryWords = categorySection.querySelector('.category-words');
+
+            if (checkbox.checked) {
+                submittedWords.add(word);
+                card.classList.add('checked');
+                
+                // Dokunduğunu Yok Et aktifse kartı gizle
+                if (settings.deleteOnTouch) {
+                    card.style.display = 'none';
+                }
+                
+                // Kategoride kelime sayısını güncelle (display ayarlandıktan sonra)
+                updateCategoryCount(categorySection);
+                
+                // Kategori boşsa gizle
+                if (categoryWords.querySelectorAll('.word-card:not([style*="display: none"])').length === 0) {
+                    categorySection.style.display = 'none';
+                }
+            } else if (settings.deleteOnTouch) {
+                // Dokunduğunu Yok Et modu aktifse, tekrar tıklamada sil
+                submittedWords.delete(word);
+                checkbox.checked = false;
+                card.classList.remove('checked');
+                card.style.display = 'flex';
+                categorySection.style.display = 'block';
+                updateCategoryCount(categorySection);
+            } else {
+                submittedWords.delete(word);
+                card.classList.remove('checked');
+                card.style.display = 'flex';
+                updateCategoryCount(categorySection);
+            }
+
+            updateSubmittedWords();
+        }
+
+        function updateCategoryCount(categorySection) {
+            const allCards = categorySection.querySelectorAll('.word-card');
+            const visibleCards = Array.from(allCards).filter(card => 
+                card.style.display !== 'none'
+            ).length;
+            const header = categorySection.querySelector('.category-header');
+            const harfCount = header.textContent.match(/(\d+) HARF/)[1];
+            header.textContent = `${harfCount} HARF (${visibleCards})`;
+        }
+
+        function updateSubmittedWords() {
+            const submittedSection = document.getElementById('submittedSection');
+            const submittedWordsDiv = document.getElementById('submittedWords');
+
+            if (submittedWords.size === 0) {
+                submittedSection.style.display = 'none';
+                return;
+            }
+
+            submittedSection.style.display = 'block';
+            
+            // Kelimeleri harf sayısına göre grupla
+            const groupedWords = {};
+            Array.from(submittedWords).forEach(word => {
+                const len = word.length;
+                if (!groupedWords[len]) groupedWords[len] = [];
+                groupedWords[len].push(word);
+            });
+
+            // Sıralamayı azalan olarak yap (en büyük harfli kelimeler önce)
+            const sortedLengths = Object.keys(groupedWords).map(Number).sort((a, b) => b - a);
+
+            // HTML oluştur
+            let html = '';
+            sortedLengths.forEach(len => {
+                const words = groupedWords[len].sort(); // Her kategori içinde alfabetik sırala
+                html += `
+                    <div style="margin-bottom: 1rem;">
+                        <div style="font-size: 0.85rem; color: var(--primary); font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">${len} HARF</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                            ${words.map(word => `<div class="submitted-word" onclick="removeWord('${word}')" style="cursor: pointer;">${word}</div>`).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+            
+            submittedWordsDiv.innerHTML = html;
+            
+            // Liste modu varsa sınıf ekle
+            if (settings.listMode) {
+                submittedWordsDiv.classList.add('list-mode');
+            } else {
+                submittedWordsDiv.classList.remove('list-mode');
+            }
+        }
+
+        function removeWord(word) {
+            submittedWords.delete(word);
+            
+            // Çalışan kelimeyi bul ve checkbox'ını kapat
+            const checkboxes = document.querySelectorAll('.word-card input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (checkbox.value === word) {
+                    checkbox.checked = false;
+                    const card = checkbox.closest('.word-card');
+                    const categorySection = card.closest('.category-section');
+                    card.classList.remove('checked');
+                    card.style.display = 'flex';  // Kartı geri göster
+                    categorySection.style.display = 'block';
+                    updateCategoryCount(categorySection);
+                }
+            });
+            
+            updateSubmittedWords();
+        }
+
+        // Sayfa yüklendiğinde ayarları yükle
+        window.addEventListener('load', loadSettings);
+    </script>
+</body>
+</html>

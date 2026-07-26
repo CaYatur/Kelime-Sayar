@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puan Tablosu - Kelime Sayar</title>
+    <link rel="stylesheet" href="styles.css?v=2">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            max-width: 100%;
+            width: 100%;
+            margin-top: 80px;
+        }
+
+        /* Sayfa ölçekleme: %90 */
+        .page-scale {
+            transform: scale(0.9);
+            -webkit-transform: scale(0.9);
+            transform-origin: top center;
+            -webkit-transform-origin: top center;
+            display: inline-block; /* keep width from collapsing */
+            width: 125%; /* compensate for scale so layout remains full-width */
+            height: auto;
+        }
+        
+        /* Köşe Logoları - Tablonun üstündeki boşluklarda */
+        .corner-logos {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            width: 100%;
+            height: 100px;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .corner-logo {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            object-fit: contain;
+            opacity: 0.95;
+            transition: all 0.3s ease;
+            pointer-events: auto;
+            filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+        }
+        
+        .corner-logo.left-logo {
+            left: 40px;
+            top: 0;
+        }
+        
+        .corner-logo.right-logo {
+            right: 40px;
+            top: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .corner-logo {
+                width: 70px;
+                height: 70px;
+            }
+            .corner-logo.left-logo {
+                left: 15px;
+            }
+            .corner-logo.right-logo {
+                right: 15px;
+            }
+            .corner-logos {
+                top: -60px;
+                height: 70px;
+            }
+        }
+        
+        .scoreboard-container {
+            position: relative;
+            width: 100%;
+            max-width: 98vw;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            overflow-x: auto;
+            box-sizing: border-box;
+        }
+        
+        .scoreboard-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding-top: 10px;
+        }
+        
+        .scoreboard-header h1 {
+            color: white;
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin: 0 0 10px 0;
+            white-space: nowrap;
+            overflow: visible;
+        }
+        
+        .room-code-display {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            color: white;
+            font-weight: 600;
+            font-size: clamp(0.8rem, 2vw, 1rem);
+        }
+        
+        .room-code-display.hidden {
+            display: none;
+        }
+        
+        /* Mevcut Harfler Gösterimi */
+        .letters-display-scoreboard {
+            background: rgba(102, 126, 234, 0.2);
+            padding: 12px 20px;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .letters-label {
+            color: white;
+            font-weight: 700;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
+        }
+        
+        .letters-container {
+            display: flex;
+            justify-content: center;
+            gap: clamp(3px, 0.8vw, 12px);
+            flex-wrap: wrap;
+            flex-shrink: 0;
+        }
+        
+        .letter-box {
+            background: white;
+            width: clamp(35px, 4vw, 60px);
+            height: clamp(45px, 6vh, 80px);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(1.2rem, 3vh, 2.5rem);
+            font-weight: 900;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .letter-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+            pointer-events: none;
+        }
+        
+        /* İlk 3 harf turuncu (sesli harfler) */
+        .letter-box.vowel {
+            color: #ff6b35;
+            background: linear-gradient(135deg, #FFF8E7 0%, #FFE8C1 100%);
+            border: 2px solid #ff9966;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        
+        .letter-box.vowel::before {
+            background: linear-gradient(135deg, rgba(255,248,231,0.3) 0%, rgba(255,232,193,0) 100%);
+        }
+        
+        /* Sonraki harfler - mor renkler */
+        .letter-box.consonant {
+            color: #6a5acd;
+            background: linear-gradient(135deg, #F0E6FF 0%, #E6D5F0 100%);
+            border: 2px solid #9b8fdc;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.08);
+        }
+        
+        .letter-box.consonant::before {
+            background: linear-gradient(135deg, rgba(240,230,255,0.3) 0%, rgba(230,213,240,0) 100%);
+        }
+        
+        @keyframes letterPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Kalan Süre Gösterimi */
+        .game-timer-display {
+            text-align: center;
+            display: inline-block;
+            margin-top: 15px;
+        }
+        
+        .timer-text {
+            font-family: 'Fredoka', sans-serif;
+            font-size: clamp(1.2rem, 2.8vh, 2.5rem);
+            font-weight: 900;
+            color: white;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.25) 0%, rgba(118, 75, 162, 0.25) 50%, rgba(240, 147, 251, 0.25) 100%);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 10px 20px;
+            letter-spacing: 2px;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 
+                0 0 15px rgba(102, 126, 234, 0.5),
+                0 0 30px rgba(118, 75, 162, 0.3);
+            box-shadow: 
+                inset 0 1px 0 rgba(255, 255, 255, 0.15),
+                0 4px 16px rgba(102, 126, 234, 0.2);
+            backdrop-filter: blur(15px);
+            position: relative;
+            overflow: hidden;
+            display: block;
+            line-height: 1;
+        }
+        
+        .timer-text strong {
+            position: relative;
+            z-index: 1;
+            font-weight: 900;
+            font-size: inherit;
+            display: inline;
+        }
+        
+        /* Duraklatma Durumu */
+        .game-paused-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 15px 25px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-top: 15px;
+            animation: pausedBlink 1.5s ease-in-out infinite;
+            box-shadow: 0 4px 20px rgba(245, 87, 108, 0.5);
+        }
+        
+        @keyframes pausedBlink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+        
+        .paused-text {
+            color: white;
+            font-weight: 800;
+            font-size: clamp(1.1rem, 2.8vw, 1.5rem);
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+        }
+        
+        .scores-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+        }
+        
+        /* Çok katılımcı için grid layout - 3-4 sütun */
+        .scores-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 12px;
+            margin-top: 15px;
+        }
+        
+        /* 25+ katılımcı için özel 4 sütun grid */
+        .scores-grid.four-columns {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        @media (max-width: 1600px) {
+            .scores-grid.four-columns {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        
+        @media (max-width: 1200px) {
+            .scores-grid.four-columns {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .scores-grid,
+            .scores-grid.four-columns {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .scores-grid .scores-table {
+            margin-top: 0;
+            font-size: clamp(0.6rem, 1.2vw, 0.8rem);
+        }
+        
+        .scores-table th,
+        .scores-table td {
+            padding: clamp(6px, 1.2vw, 12px);
+            text-align: left;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .scores-table th {
+            background: rgba(0, 0, 0, 0.3);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: clamp(0.6rem, 1.1vw, 0.8rem);
+        }
+        
+        .scores-table tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .rank-cell {
+            font-size: clamp(1.1rem, 2.2vw, 1.6rem);
+            font-weight: 800;
+            width: 50px;
+            text-align: center;
+        }
+        
+        .rank-1 { color: #FFD700; text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5); } /* Gold */
+        .rank-2 { color: #C0C0C0; text-shadow: 0 2px 8px rgba(192, 192, 192, 0.5); } /* Silver */
+        .rank-3 { color: #CD7F32; text-shadow: 0 2px 8px rgba(205, 127, 50, 0.5); } /* Bronze */
+        
+        /* Puan ve Kelime sütunlarını büyüt */
+        .scores-table td:nth-child(3),
+        .scores-table td:nth-child(4) {
+            font-size: clamp(0.85rem, 1.6vw, 1.1rem);
+            font-weight: 700;
+        }
+        
+        .eliminated {
+            opacity: 0.5;
+            text-decoration: line-through;
+        }
+        
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: clamp(0.9rem, 2vw, 1.2rem);
+            padding: 30px;
+        }
+        
+        /* Responsive: Küçük ekranlarda daha kompakt */
+        @media (max-width: 1024px) {
+            .scoreboard-container {
+                padding: 20px;
+                max-width: 96vw;
+            }
+            .scores-grid {
+                grid-template-columns: 1fr;
+            }
+            .container {
+                margin-top: 70px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .scoreboard-container {
+                padding: 15px;
+                max-width: 94vw;
+                border-radius: 15px;
+            }
+            .container {
+                margin-top: 60px;
+                padding: 5px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .scoreboard-container {
+                padding: 10px;
+                max-width: 92vw;
+                border-radius: 12px;
+            }
+            .container {
+                margin-top: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-letters" id="backgroundLetters"></div>
+    
+    <header class="top-nav">
+        <div class="nav-content">
+            <a href="/" class="logo-link">
+                <img src="../../css/CaYaDev.svg" alt="CaYaDev Logo" class="logo">
+            </a>
+            <div class="room-title-header" id="roomTitleHeader" style="display: none;"></div>
+            <div class="nav-title">Puan Tablosu - Kelime Sayar</div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="page-scale">
+        <div class="scoreboard-container">
+            <!-- Köşe Logoları -->
+            <div class="corner-logos">
+                <img id="leftLogo" class="corner-logo left-logo" alt="Sol Logo" style="display: none;">
+                <img id="rightLogo" class="corner-logo right-logo" alt="Sağ Logo" style="display: none;">
+            </div>
+            
+            <div class="scoreboard-header">
+                <h1 id="scoreboardTitle">📊 PUAN TABLOSU</h1>
+                <div class="room-code-display hidden" id="roomCodeContainer">
+                    Oda: <strong id="roomCodeDisplay">-</strong>
+                </div>
+                
+                <!-- Mevcut Harfler -->
+                <div id="lettersDisplay" class="letters-display-scoreboard" style="display: none;">
+                    <div class="letters-label"></div>
+                    <div id="lettersContainer" class="letters-container"></div>
+                </div>
+                
+                <br/>
+                <!-- Kalan Süre ve Durum -->
+                <div id="gameTimerDisplay" class="game-timer-display" style="display: none;">
+                    <div class="timer-text"><strong id="remainingTime">--:--</strong></div>
+                </div>
+                <div id="gamePausedDisplay" class="game-paused-display" style="display: none;">
+                    <div class="paused-text">⏸️ OYUN DURAKLАТILDI</div>
+                </div>
+            </div>
+            
+            <div id="scoresContent" class="loading">
+                Yükleniyor...
+            </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Oyun Seçme Butonu (Sayfanın Sağ Alt Köşesi) -->
+    <button id="gameSelectBtn" class="fullscreen-btn" title="Oyun Seç" style="display: none; right: 20px; left: auto; bottom: 20px;">
+        <svg width="28" height="28" viewBox="0 0 25 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <!-- Doodle tarzı liste ikonu -->
+            <rect x="2" y="5" width="20" height="20" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1.5" style="stroke-dasharray: 2,2; opacity: 0.6;"></rect>
+            <line x1="6" y1="10" x2="18" y2="10" stroke-width="2" style="opacity: 0.9;"></line>
+            <line x1="6" y1="15" x2="18" y2="15" stroke-width="2" style="opacity: 0.85;"></line>
+            <line x1="6" y1="20" x2="18" y2="20" stroke-width="2" style="opacity: 0.8;"></line>
+        </svg>
+    </button>
+    
+    <!-- Oyun Seçme Modalı -->
+    <div id="gameSelectModal" class="modal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; border-radius: 15px; padding: 30px; max-width: 500px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-height: 80vh; overflow-y: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h2 style="margin: 0; color: #333;">📋 Oyun Seç</h2>
+                <button id="closeGameSelectModal" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #999;">&times;</button>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <button id="totalScoresBtn" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+                    🏆 Toplam Puanlar (Varsayılan)
+                </button>
+                
+                <!-- Puanları Gizle Toggle -->
+                <button id="hideScoresBtn" style="width: 100%; padding: 12px; margin-bottom: 10px; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px; transition: all 0.2s;">
+                    👁️‍🗨️ Puanları Gizle (Geçici)
+                </button>
+                
+                <div id="gamesList" style="display: flex; flex-direction: column; gap: 10px;">
+                    <!-- Oyunlar buraya eklenecek -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomCode = urlParams.get('room');
+        
+        let ws = null;
+        let gameEndTimeout = null;
+        let showCode = false; // Başlangıç değeri, API'den güncellenecek
+        let showLetters = false; // Harfleri göster/gizle, API'den güncellenecek
+        let enableLiveScoreUpdates = false; // Anlık puan güncellemesi, API'den güncellenecek
+        let currentLetters = []; // Mevcut oyun harfleri
+        let hideScoresMode = false; // Puanları geçici gizleme modu
+        
+        if (!roomCode) {
+            document.getElementById('scoresContent').innerHTML = '<p style="color: #ff6b6b;">❌ Oda kodu belirtilmedi!</p>';
+        } else {
+            document.getElementById('roomCodeDisplay').textContent = roomCode;
+            
+            // Oda ayarlarını API'den yükle ve scoreboard'ı başlat
+            loadRoomSettings();
+        }
+        
+        async function loadRoomSettings() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/room/${roomCode}/info`);
+                const data = await response.json();
+                
+                if (data.success && data.room) {
+                    // API'den showRoomCodeOnScoreboard ayarını al
+                    showCode = data.room.showRoomCodeOnScoreboard === true;
+                    showLetters = data.room.showLettersOnScoreboard === true;
+                    enableLiveScoreUpdates = data.room.enableLiveScoreUpdates === true;
+                    console.log(`📊 Oda ayarları API'den yüklendi: showRoomCode=${showCode}, showLetters=${showLetters}, enableLiveScore=${enableLiveScoreUpdates}`);
+                    
+                    // Oda kodunu göster/gizle
+                    const roomCodeContainer = document.getElementById('roomCodeContainer');
+                    if (showCode) {
+                        roomCodeContainer.classList.remove('hidden');
+                        console.log('✅ Oda kodu gösteriliyor:', roomCode);
+                    } else {
+                        roomCodeContainer.classList.add('hidden');
+                        console.log('🚫 Oda kodu gizleniyor');
+                    }
+                    
+                    // Oda resimlerini yükle
+                    loadRoomImages();
+                    
+                    // Mevcut oyun durumunu yükle (harfler ve süre varsa)
+                    loadGameState();
+                    
+                    // Scoreboard'ı yükle
+                    loadScoreboard();
+                    connectWebSocket();
+                } else {
+                    document.getElementById('scoresContent').innerHTML = '<p style="color: #ff6b6b;">❌ Oda bilgileri yüklenemedi!</p>';
+                }
+            } catch (error) {
+                console.error('Oda ayarları yükleme hatası:', error);
+                document.getElementById('scoresContent').innerHTML = '<p style="color: #ff6b6b;">❌ Bağlantı hatası!</p>';
+            }
+        }
+        
+        // Oda resimlerini yükle
+        async function loadRoomImages() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/room/${roomCode}/images`);
+                const data = await response.json();
+                
+                if (data.images && data.images.length > 0) {
+                    data.images.forEach(img => {
+                        if (img.position === 'left') {
+                            const leftLogo = document.getElementById('leftLogo');
+                            if (leftLogo) {
+                                leftLogo.src = img.image_path;
+                                leftLogo.style.display = 'block';
+                            }
+                        } else if (img.position === 'right') {
+                            const rightLogo = document.getElementById('rightLogo');
+                            if (rightLogo) {
+                                rightLogo.src = img.image_path;
+                                rightLogo.style.display = 'block';
+                            }
+                        }
+                    });
+                    console.log('✅ Oda resimleri yüklendi');
+                }
+            } catch (error) {
+                console.warn('⚠️ Oda resimleri yüklenirken hata:', error);
+            }
+        }
+        
+        // Mevcut oyun durumunu yükle (harfler, kalan süre vb.)
+        async function loadGameState() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/game/${roomCode}/current-session`);
+                const data = await response.json();
+                
+                if (data.success && data.gameState === 'playing') {
+                    console.log('🎮 Oyun devam ediyor - mevcut durumu yükleniyor');
+                    
+                    // Harfleri güncelle
+                    if (data.letters && data.letters.length > 0) {
+                        currentLetters = data.letters;
+                        updateLettersDisplay();
+                        console.log('🔤 Harfler yüklendi:', data.letters);
+                    }
+                    
+                    // Timer'ı göster ve kalan süreyi hesapla
+                    if (data.timerStarted && data.durationSeconds) {
+                        showGameTimer();
+                        // Yapılacak: WebSocket'ten aldığımız süreyi kullan
+                        // Şimdilik tahmini süre göster
+                        console.log('⏱️ Oyun süresi:', data.durationSeconds, 'saniye');
+                    }
+                } else if (data.gameState === 'paused') {
+                    console.log('⏸️ Oyun duraklatılmış');
+                } else {
+                    console.log('⏱️ Oyun başlamadı veya bitti');
+                }
+            } catch (error) {
+                console.warn('⚠️ Oyun durumu yüklenirken hata:', error);
+            }
+        }
+        
+        function connectWebSocket() {
+            const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${wsProtocol}//${window.location.host}`;
+            
+            ws = new WebSocket(wsUrl);
+            
+            ws.onopen = () => {
+                console.log('🔌 WebSocket bağlandı');
+                // Scoreboard için odaya katıl (sadece dinlemek için)
+                ws.send(JSON.stringify({
+                    type: 'join_room',
+                    roomCode: roomCode,
+                    participant: 'scoreboard_viewer'
+                }));
+            };
+            
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    
+                    // Sadece bu oda için mesajları dinle
+                    if (data.roomCode && data.roomCode !== roomCode) {
+                        console.log('⏭️ Başka bir oda mesajı, atlanıyor:', data.roomCode);
+                        return;
+                    }
+                    
+                    console.log('📩 WebSocket mesajı alındı:', data.type);
+                    
+                    switch(data.type) {
+                        case 'game_created':
+                            console.log('🎮 Oyun oluşturuldu - puan tablosu güncelleniyor');
+                            loadScoreboard(); // Oyun oluşturulunca anlık güncelle
+                            break;
+                        
+                        case 'letters_revealed':
+                            console.log('🔤 Harfler açıldı:', data.letters);
+                            currentLetters = data.letters || [];
+                            updateLettersDisplay();
+                            break;
+                        
+                        case 'settings_updated':
+                            console.log('⚙️ Ayarlar güncellendi:', data);
+                            if (data.showRoomCodeOnScoreboard !== undefined) {
+                                showCode = data.showRoomCodeOnScoreboard;
+                                const roomCodeContainer = document.getElementById('roomCodeContainer');
+                                if (showCode) {
+                                    roomCodeContainer.classList.remove('hidden');
+                                } else {
+                                    roomCodeContainer.classList.add('hidden');
+                                }
+                            }
+                            if (data.showLettersOnScoreboard !== undefined) {
+                                showLetters = data.showLettersOnScoreboard;
+                                updateLettersDisplay();
+                            }
+                            if (data.enableLiveScoreUpdates !== undefined) {
+                                enableLiveScoreUpdates = data.enableLiveScoreUpdates;
+                                console.log(`⚡ Anlık puan güncellemesi: ${enableLiveScoreUpdates ? 'AÇIK' : 'KAPALI'}`);
+                            }
+                            break;
+                        
+                        case 'timer_started':
+                            console.log('⏱️ Timer başladı - puan tablosu güncelleniyor');
+                            console.log('👥 Bu oyuna katılan katılımcılar:', data.participants);
+                            showGameTimer();
+                            loadScoreboard(); // Oyun başlayınca o oyuna katılanları göster
+                            break;
+                        
+                        case 'timer_update':
+                            // Kalan süreyi güncelle
+                            if (data.remainingSeconds !== undefined) {
+                                updateTimer(data.remainingSeconds);
+                            }
+                            break;
+                        
+                        case 'game_paused':
+                            console.log('⏸️ Oyun duraklatıldı');
+                            hideGameTimer();
+                            showPausedStatus();
+                            break;
+                        
+                        case 'game_resumed':
+                            console.log('▶️ Oyun devam ediyor');
+                            hidePausedStatus();
+                            showGameTimer();
+                            break;
+                        
+                        case 'participant_eliminated':
+                        case 'participant_restored':
+                            console.log('👤 Katılımcı durumu değişti - puan tablosu ve katılımcı listesi güncelleniyor');
+                            loadScoreboard(); // Elenme durumu güncellendi
+                            break;
+                        
+                        case 'word_submitted':
+                            // Anlık puan güncellemesi aktifse hemen güncelle
+                            if (enableLiveScoreUpdates) {
+                                console.log('📝 Kelime gönderildi - ANLIK PUAN GÜNCELLENİYOR');
+                                loadScoreboard();
+                            } else {
+                                console.log('📝 Kelime gönderildi - anlık güncelleme kapalı (oyun bitince güncellenecek)');
+                            }
+                            break;
+                            
+                        case 'game_ended':
+                            console.log('🏁 Oyun bitti - puan tablosu güncelleniyor (GÜNCEL PUANLAR)');
+                            console.log('👥 Oyun biten katılımcılar:', data.participants);
+                            
+                            // Timer'ı gizle
+                            hideGameTimer();
+                            
+                            loadScoreboard(); // Oyun bitince hemen güncelle - GÜNCEL PUANLAR + SADECE O OYUNA KATILANLAR
+                            
+                            // 1 dakika sonra tekrar güncelle (tüm oyunların toplamı için, TÜM KATILIMCILAR)
+                            if (gameEndTimeout) clearTimeout(gameEndTimeout);
+                            gameEndTimeout = setTimeout(() => {
+                                console.log('⏰ 1 dakika geçti - tüm katılımcıların tüm oyunlarının toplamı yükleniyor');
+                                loadScoreboard();
+                            }, 60000); // 60 saniye
+                            break;
+                        
+                        case 'letters_cleared':
+                            console.log('🔄 Harfler sıfırlandı');
+                            currentLetters = [];
+                            updateLettersDisplay();
+                            hideGameTimer(); // Timer'ı da gizle
+                            break;
+                        
+                        case 'room_images_updated':
+                            console.log('🖼️ Oda resimleri güncellendi');
+                            loadRoomImages();
+                            break;
+                    }
+                } catch (error) {
+                    console.error('WebSocket mesaj hatası:', error);
+                }
+            };
+            
+            ws.onerror = (error) => {
+                console.error('❌ WebSocket hatası:', error);
+            };
+            
+            ws.onclose = () => {
+                console.log('🔌 WebSocket bağlantısı kapandı - 3 saniye sonra yeniden bağlanılıyor');
+                setTimeout(connectWebSocket, 3000);
+            };
+        }
+        
+        async function loadScoreboard() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/game/${roomCode}/scoreboard`);
+                const data = await response.json();
+                
+                if (data.success && data.scores) {
+                    displayScores(data.scores, data.gameState, data.message, data.showingPreGameScores);
+                    
+                    // Oda başlığını header'da göster (varsa)
+                    const roomTitleHeader = document.getElementById('roomTitleHeader');
+                    if (roomTitleHeader && data.roomTitle) {
+                        roomTitleHeader.textContent = data.roomTitle;
+                        roomTitleHeader.style.display = 'block';
+                    } else if (roomTitleHeader) {
+                        roomTitleHeader.style.display = 'none';
+                    }
+                    
+                    scoreboardTitle.textContent = '📊 PUAN TABLOSU';
+                    
+                    // Görselleri yükle
+                    if (data.images) {
+                        const leftLogo = document.getElementById('leftLogo');
+                        const rightLogo = document.getElementById('rightLogo');
+                        
+                        if (data.images.left) {
+                            leftLogo.src = data.images.left;
+                            leftLogo.style.display = 'block';
+                        } else {
+                            leftLogo.style.display = 'none';
+                        }
+                        
+                        if (data.images.right) {
+                            rightLogo.src = data.images.right;
+                            rightLogo.style.display = 'block';
+                        } else {
+                            rightLogo.style.display = 'none';
+                        }
+                    }
+                } else {
+                    document.getElementById('scoresContent').innerHTML = '<p style="color: #feca57;">⚠️ Henüz oyun başlamadı</p>';
+                }
+            } catch (error) {
+                console.error('Puan tablosu hatası:', error);
+                document.getElementById('scoresContent').innerHTML = '<p style="color: #ff6b6b;">❌ Puan tablosu yüklenemedi</p>';
+            }
+        }
+        
+        function displayScores(scores, gameState, message, showingPreGameScores) {
+            const content = document.getElementById('scoresContent');
+            
+            if (scores.length === 0) {
+                content.innerHTML = '<p style="color: white; text-align: center;">Henüz puan yok</p>';
+                return;
+            }
+            
+            // Dinamik sütun sayısı belirleme
+            let columns = 1;
+            let itemsPerColumn = scores.length;
+            
+            if (scores.length > 25) {
+                columns = 4; // 25+ kişi için 4 sütun
+                itemsPerColumn = Math.ceil(scores.length / 4);
+            } else if (scores.length > 15) {
+                columns = 3; // 15-25 kişi için 3 sütun
+                itemsPerColumn = Math.ceil(scores.length / 3);
+            } else if (scores.length > 10) {
+                columns = 2; // 10-15 kişi için 2 sütun
+                itemsPerColumn = Math.ceil(scores.length / 2);
+            }
+            
+            const useGrid = columns > 1;
+            
+            let html = '';
+            
+            if (useGrid) {
+                // Grid layout: Çoklu sütun
+                const gridClass = columns === 4 ? 'scores-grid four-columns' : 'scores-grid';
+                html += `<div class="${gridClass}">`;
+                
+                for (let i = 0; i < columns; i++) {
+                    const start = i * itemsPerColumn;
+                    const end = Math.min(start + itemsPerColumn, scores.length);
+                    
+                    if (start < scores.length) {
+                        html += createScoreTable(scores.slice(start, end), start);
+                    }
+                }
+                
+                html += '</div>';
+            } else {
+                // Normal tek tablo
+                html = createScoreTable(scores, 0);
+            }
+            
+            // Oyun durumu ve açıklama mesajı
+            let stateEmoji = gameState === 'playing' ? '🟢' : gameState === 'finished' ? '🏁' : '⏸️';
+            let stateText = gameState === 'playing' ? 'Devam Ediyor' : gameState === 'finished' ? 'Bitti' : 'Başlamadı';
+            
+            html += `
+                <div style="text-align: center; margin-top: 25px; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 15px;">
+                    <p style="color: rgba(255,255,255,0.9); font-size: 1.2rem; margin: 0 0 10px 0;">
+                        <strong>${stateEmoji} ${stateText}</strong>
+                    </p>
+                    <p style="color: rgba(255,255,255,0.7); font-size: 0.95rem; margin: 0; font-style: italic;">
+                        ${message || ''}
+                    </p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 0.85rem; margin: 10px 0 0 0;">
+                        ${scores.length} katılımcı gösteriliyor ${useGrid ? `(${columns} sütun)` : ''}
+                    </p>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+        }
+        
+        function createScoreTable(scores, startIndex) {
+            let html = `
+                <table class="scores-table">
+                    <thead>
+                        <tr>
+                            <th>Sıra</th>
+                            <th>Oyuncu</th>
+                            <th>Puan</th>
+                            <th>Kelime</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            scores.forEach((score, index) => {
+                const actualIndex = startIndex + index;
+                const rankClass = actualIndex === 0 ? 'rank-1' : actualIndex === 1 ? 'rank-2' : actualIndex === 2 ? 'rank-3' : '';
+                const eliminatedClass = score.isEliminated ? 'eliminated' : '';
+                
+                // API'den gelen format desteği (name, score, wordCount) ve eski format desteği (participant, points, words, rank)
+                const name = score.name || score.participant || 'Bilinmiyor';
+                const points = score.score !== undefined ? score.score : score.points || 0;
+                const wordCount = score.wordCount !== undefined ? score.wordCount : score.words || 0;
+                const rank = score.rank || (actualIndex + 1);
+                
+                // Puanları gizle modunda tüm puanları 0 göster
+                const displayPoints = hideScoresMode ? 0 : points;
+                const displayWordCount = hideScoresMode ? 0 : wordCount;
+                
+                html += `
+                    <tr class="${eliminatedClass}">
+                        <td class="rank-cell ${rankClass}">${hideScoresMode ? '-' : rank}</td>
+                        <td>${name}</td>
+                        <td><strong>${displayPoints}</strong></td>
+                        <td>${displayWordCount}</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                    </tbody>
+                </table>
+            `;
+            
+            return html;
+        }
+
+        // Arka plan harflerini oluştur (room.js'den)
+        const VOWELS = ['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü'];
+        const CONSONANTS = ['B', 'C', 'Ç', 'D', 'F', 'G', 'Ğ', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'Ş', 'T', 'V', 'Y', 'Z'];
+        
+        function createBackgroundLetters() {
+            const container = document.getElementById('backgroundLetters');
+            const allLetters = [...VOWELS, ...CONSONANTS];
+            const letterCount = 20;
+            
+            for (let i = 0; i < letterCount; i++) {
+                const letter = document.createElement('div');
+                letter.className = 'bg-letter';
+                letter.textContent = allLetters[Math.floor(Math.random() * allLetters.length)];
+                letter.style.left = Math.random() * 100 + '%';
+                letter.style.fontSize = (Math.random() * 80 + 40) + 'px';
+                letter.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                letter.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(letter);
+            }
+        }
+        
+        createBackgroundLetters();
+        
+        // Harfleri Gösterme Fonksiyonu
+        function updateLettersDisplay() {
+            const lettersDisplay = document.getElementById('lettersDisplay');
+            const lettersContainer = document.getElementById('lettersContainer');
+            
+            // Sesli harfler listesi
+            const vowels = ['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü'];
+            
+            // Harfler varsa ve gösterilmesi gerekiyorsa
+            if (showLetters && currentLetters.length > 0) {
+                lettersContainer.innerHTML = '';
+                currentLetters.forEach((letter, index) => {
+                    const letterBox = document.createElement('div');
+                    letterBox.className = 'letter-box';
+                    
+                    // İlk 3 harf turuncu (sesli harf)
+                    if (index < 3) {
+                        letterBox.classList.add('vowel');
+                    } else {
+                        letterBox.classList.add('consonant');
+                    }
+                    
+                    letterBox.textContent = letter;
+                    lettersContainer.appendChild(letterBox);
+                });
+                lettersDisplay.style.display = 'inline-flex';
+                console.log('🔤 Harfler gösteriliyor:', currentLetters);
+            } else {
+                lettersDisplay.style.display = 'none';
+                console.log('🚫 Harfler gizleniyor');
+            }
+        }
+        
+        // Timer Fonksiyonları
+        function showGameTimer() {
+            const timerDisplay = document.getElementById('gameTimerDisplay');
+            const pausedDisplay = document.getElementById('gamePausedDisplay');
+            
+            timerDisplay.style.display = 'block';
+            pausedDisplay.style.display = 'none';
+            console.log('⏱️ Timer gösterimi açıldı');
+        }
+        
+        function hideGameTimer() {
+            const timerDisplay = document.getElementById('gameTimerDisplay');
+            timerDisplay.style.display = 'none';
+            console.log('⏱️ Timer gösterimi kapatıldı');
+        }
+        
+        function updateTimer(remainingSeconds) {
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+            const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            
+            const remainingTimeElement = document.getElementById('remainingTime');
+            if (remainingTimeElement) {
+                remainingTimeElement.textContent = timeStr;
+            }
+            
+            // Süre bittiğinde timer'ı gizle
+            if (remainingSeconds <= 0) {
+                hideGameTimer();
+            }
+        }
+        
+        function showPausedStatus() {
+            const timerDisplay = document.getElementById('gameTimerDisplay');
+            const pausedDisplay = document.getElementById('gamePausedDisplay');
+            
+            timerDisplay.style.display = 'none';
+            pausedDisplay.style.display = 'block';
+            console.log('⏸️ Duraklatma gösterimi açıldı');
+        }
+        
+        function hidePausedStatus() {
+            const pausedDisplay = document.getElementById('gamePausedDisplay');
+            pausedDisplay.style.display = 'none';
+            console.log('▶️ Duraklatma gösterimi kapatıldı');
+        }
+    </script>
+
+    <!-- Tam Ekran Butonu -->
+    <button id="fullscreenBtn" class="fullscreen-btn" title="Tam Ekran">⛶</button>
+    
+    <script>
+        // Tam ekran işlevi
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        function updateFullscreenButton() {
+            if (document.fullscreenElement) {
+                fullscreenBtn.style.display = 'none';
+            } else {
+                fullscreenBtn.style.display = 'flex';
+            }
+        }
+        
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Tam ekran hatası:', err);
+                });
+            }
+        });
+        
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        updateFullscreenButton();
+        
+        // ========== OYUN SEÇME MODALŞ ==========
+        let currentSelectedSessionId = null; // Şu anda seçili oyunun session ID'si
+        let allGameSessions = []; // Tüm oyun seansları
+        
+        const gameSelectBtn = document.getElementById('gameSelectBtn');
+        const gameSelectModal = document.getElementById('gameSelectModal');
+        const closeGameSelectModal = document.getElementById('closeGameSelectModal');
+        const gamesList = document.getElementById('gamesList');
+        const totalScoresBtn = document.getElementById('totalScoresBtn');
+        
+        // Oyun seçme butonuna tıklayınca modalı aç
+        gameSelectBtn.addEventListener('click', () => {
+            gameSelectModal.style.display = 'flex';
+            loadGameSessions();
+        });
+        
+        // Modalı kapat
+        closeGameSelectModal.addEventListener('click', () => {
+            gameSelectModal.style.display = 'none';
+        });
+        
+        gameSelectModal.addEventListener('click', (e) => {
+            if (e.target === gameSelectModal) {
+                gameSelectModal.style.display = 'none';
+            }
+        });
+        
+        // Oyun seanslarını API'den yükle
+        async function loadGameSessions() {
+            try {
+                const response = await fetch(`${window.location.origin}/api/room/${roomCode}/game-history`);
+                const data = await response.json();
+                
+                if (data.success && data.gameHistory) {
+                    allGameSessions = data.gameHistory;
+                    
+                    // Oyunları listele
+                    gamesList.innerHTML = '';
+                    allGameSessions.forEach((session, index) => {
+                        const startTime = new Date(session.created_at).toLocaleTimeString('tr-TR');
+                        const gameNumber = allGameSessions.length - index; // En eski oyun = Oyun 1
+                        const button = document.createElement('button');
+                        button.style.cssText = `
+                            width: 100%; 
+                            padding: 12px; 
+                            background: linear-gradient(135deg, #667eea, #764ba2); 
+                            color: white; 
+                            border: none; 
+                            border-radius: 8px; 
+                            cursor: pointer; 
+                            font-weight: 600; 
+                            font-size: 14px; 
+                            transition: all 0.2s;
+                        `;
+                        button.textContent = `🎮 Oyun ${gameNumber} - ${startTime}`;
+                        
+                        button.addEventListener('click', () => {
+                            currentSelectedSessionId = session.session_id;
+                            gameSelectModal.style.display = 'none';
+                            loadAndDisplayScores(session.session_id); // Seçili oyunun puanlarını yükle
+                        });
+                        
+                        gamesList.appendChild(button);
+                    });
+                }
+            } catch (error) {
+                console.error('Oyun seansları yükleme hatası:', error);
+            }
+        }
+        
+        // Puanları yükle ve göster
+        async function loadAndDisplayScores(sessionId) {
+            try {
+                const url = sessionId 
+                    ? `${window.location.origin}/api/room/${roomCode}/scores?sessionId=${sessionId}`
+                    : `${window.location.origin}/api/room/${roomCode}/scores`;
+                
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayScores(data.scores, data.gameState, data.message, data.showingPreGameScores);
+                }
+            } catch (error) {
+                console.error('Puanları yükleme hatası:', error);
+            }
+        }
+        
+        // Toplam puanları göster
+        totalScoresBtn.addEventListener('click', () => {
+            currentSelectedSessionId = null;
+            gameSelectModal.style.display = 'none';
+            loadAndDisplayScores(null); // Tüm oyunların toplamını yükle
+        });
+        
+        // Puanları gizle/göster toggle
+        const hideScoresBtn = document.getElementById('hideScoresBtn');
+        hideScoresBtn.addEventListener('click', () => {
+            hideScoresMode = !hideScoresMode;
+            
+            if (hideScoresMode) {
+                hideScoresBtn.textContent = '👁️ Puanları Göster';
+                hideScoresBtn.style.background = 'linear-gradient(135deg, #6366f1, #4f46e5)';
+            } else {
+                hideScoresBtn.textContent = '👁️‍🗨️ Puanları Gizle (Geçici)';
+                hideScoresBtn.style.background = 'linear-gradient(135deg, #f59e0b, #d97706)';
+            }
+            
+            // Mevcut puanları yeniden göster
+            loadAndDisplayScores(currentSelectedSessionId);
+            gameSelectModal.style.display = 'none';
+        });
+        
+        // Başlangıçta "Oyun Seç" butonunu göster
+        // Modal açılmaz, sadece buton gösterilir
+        setTimeout(() => {
+            gameSelectBtn.style.display = 'block';
+        }, 500);
+    </script>
+</body>
+</html>

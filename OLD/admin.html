@@ -1,0 +1,840 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Paneli - Kelime Sayar</title>
+    <link rel="icon" href="../../../icons/favicon.ico">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="admin.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+</head>
+<body>
+    <!-- Arka Plan Harfler -->
+    <div class="background-letters" id="backgroundLetters"></div>
+
+    <!-- Üst Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <a href="/" class="logo-link" title="CaYaDev Ana Sayfa">
+                <img src="../../css/CaYaDev.svg" alt="CaYaDev Logo" class="logo">
+            </a>
+            <div class="nav-title">Kelime Sayar - Yönetici Paneli</div>
+        </div>
+    </header>
+
+    <div class="container admin-container">
+        <!-- Yönetici Paneli Başlığı -->
+        <div class="admin-header-section">
+            <h1 class="admin-title">🎮 YÖNETİCİ PANELİ</h1>
+        </div>
+
+        <!-- Yönetici Paneli İçeriği -->
+        <div class="admin-panel">
+            
+            <!-- Oda Bilgileri -->
+            <div class="admin-section room-info-section">
+                <h2>📋 Oda Bilgileri</h2>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <label>Oda Kodu</label>
+                        <div class="code-display-large">
+                            <span id="displayRoomCode">--------</span>
+                            <button class="btn-copy-large" id="copyRoomCodeBtnAdmin" title="Kopyala">📋</button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="showRoomCodeOnScoreboard">
+                                Puan tablosunda oda kodunu göster
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="showLettersOnScoreboard" checked>
+                                Puan tablosunda harfleri göster
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="enableLiveScoreUpdates">
+                                Anlık puan güncellemesini aktif et
+                            </label>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useCustomLetters">
+                                Belirli harfleri kullan
+                            </label>
+                            <button class="btn-edit-letters" id="editCustomLettersBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                ✏️ Düzenle
+                            </button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useBoxBasedLetters">
+                                Kutucuk bazlı harf çıkışı
+                            </label>
+                            <button class="btn-edit-box-letters" id="editBoxLettersBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #8b5cf6; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                📦 Düzenle
+                            </button>
+                        </div>
+                        <!-- <div style="margin-top: 10px; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 6px; border-left: 3px solid #f59e0b;">
+                            <small style="color: #fbbf24; font-size: 12px;">
+                                ℹ️ Not: Sadece bir harf çıkışı sistemi aynı anda aktif olabilir.
+                            </small>
+                        </div> -->
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="useCustomScoring">
+                                Özel puanlama sistemi
+                            </label>
+                            <button class="btn-edit-scoring" id="editCustomScoringBtn" style="display: none; margin-left: 10px; padding: 6px 12px; background: #f59e0b; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.2s;">
+                                ⚙️ Düzenle
+                            </button>
+                        </div>
+                        <div class="checkbox-group">
+                            <label>
+                                <input type="checkbox" id="disableCardAnimations">
+                                Kutucuk animasyonlarını kapat (düşük performanslı cihazlar için)
+                            </label>
+                        </div>
+
+                        <!-- Oda Resimleri (Sol/Sağ) -->
+                        <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.1);">
+                            <h3 style="font-size: 0.95rem; font-weight: 700; color: #555; margin-bottom: 12px;">🖼️ Oda Resimleri</h3>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                                <!-- Sol Resim -->
+                                <div style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px; border: 2px dashed #667eea;">
+                                    <div style="font-weight: 600; color: #555; margin-bottom: 10px; font-size: 0.95rem;">⬅️ Sol Üst Resim</div>
+                                    <div id="leftImagePreview" style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <span style="color: #999; font-size: 0.85rem;">Resim yok</span>
+                                    </div>
+                                    <input type="file" id="leftImageInput" accept="image/*" style="display: none;">
+                                    <button class="btn-primary" id="uploadLeftImageBtn" style="width: 100%; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;" onclick="document.getElementById('leftImageInput').click();">📤 Yükle</button>
+                                    <button class="btn-danger" id="removeLeftImageBtn" style="width: 100%; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; margin-top: 8px; display: none;" onclick="removeRoomImage('left');">🗑️ Sil</button>
+                                </div>
+
+                                <!-- Sağ Resim -->
+                                <div style="background: rgba(102, 126, 234, 0.05); padding: 15px; border-radius: 8px; border: 2px dashed #667eea;">
+                                    <div style="font-weight: 600; color: #555; margin-bottom: 10px; font-size: 0.95rem;">➡️ Sağ Üst Resim</div>
+                                    <div id="rightImagePreview" style="width: 100%; height: 80px; background: #f0f0f0; border-radius: 6px; margin-bottom: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <span style="color: #999; font-size: 0.85rem;">Resim yok</span>
+                                    </div>
+                                    <input type="file" id="rightImageInput" accept="image/*" style="display: none;">
+                                    <button class="btn-primary" id="uploadRightImageBtn" style="width: 100%; padding: 8px 12px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s;" onclick="document.getElementById('rightImageInput').click();">📤 Yükle</button>
+                                    <button class="btn-danger" id="removeRightImageBtn" style="width: 100%; padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.9rem; transition: all 0.2s; margin-top: 8px; display: none;" onclick="removeRoomImage('right');">🗑️ Sil</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ayarları Dışa/İçe Aktarma -->
+                        <div class="settings-import-export" style="margin-top: 20px; padding-top: 20px; border-top: 2px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button class="btn-export-settings" id="exportSettingsBtn" style="flex: 1; padding: 10px 16px; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    📤 Ayarları Dışa Aktar
+                                </button>
+                                <button class="btn-import-settings" id="importSettingsBtn" style="flex: 1; padding: 10px 16px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    📥 Ayarları İçe Aktar
+                                </button>
+                            </div>
+                            <input type="file" id="importSettingsFileInput" accept=".json" style="display: none;">
+                        </div>
+                    </div>
+                    
+                    <div class="info-card">
+                        <label>Oda Durumu</label>
+                        <div class="status-info">
+                            <div class="status-item">
+                                <span class="status-label">Durum:</span>
+                                <span class="status-value" id="roomStatus">Aktif</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Kalan Süre:</span>
+                                <span class="status-value" id="roomTimeLeft">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Oynanan Oyun:</span>
+                                <span class="status-value" id="totalGamesPlayed">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Kodu Kartı -->
+            <div class="admin-code-section">
+                <h2>🔑 Admin Kodu</h2>
+                <div class="admin-code-card-large">
+                    <span id="adminCodeDisplay" class="admin-code-value">--------</span>
+                    <button class="btn-copy-admin-code" id="copyAdminCode" title="Kopyala">📋 Kopyala</button>
+                </div>
+            </div>
+
+            <!-- Puan Tablosu Linki -->
+            <div class="admin-section scoreboard-section">
+                <h2>📊 Puan Tablosu</h2>
+                <button class="btn-scoreboard" id="openScoreboardBtn">
+                    <span class="btn-icon">📺</span>
+                    <span>Puan Tablosunu Yeni Sekmede Aç</span>
+                </button>
+                <p class="scoreboard-info">
+                    💡 Puan tablosu ekranını projektör veya büyük ekranda gösterin!
+                </p>
+            </div>
+
+            <!-- Oyun Kontrolleri -->
+            <div class="admin-section game-controls-section">
+                <h2>🎮 Oyun Kontrolleri</h2>
+                
+                <div class="game-status">
+                    <div class="current-game-info">
+                        <span class="game-state-label">Oyun Durumu:</span>
+                        <span class="game-state-value" id="gameState">Oyun Yok</span>
+                    </div>
+                    <div class="current-session-info">
+                        <span>Session:</span>
+                        <span id="currentSessionId">-</span>
+                    </div>
+                    <div class="current-session-info">
+                        <span>Oyun Bitme Süresi:</span>
+                        <span id="gameTimeRemaining" style="font-weight: bold; color: #4CAF50;">-</span>
+                    </div>
+                </div>
+
+                <div class="control-buttons">
+                    <div class="control-group">
+                        <label>
+                            Oyun Süresi (Dakika)
+                            <button id="gameSettingsBtn" class="settings-icon-btn" title="Oyun Ayarları">⚙️</button>
+                        </label>
+                        <input type="number" id="gameDuration" min="1" max="60" value="10" class="duration-input">
+                    </div>
+                    
+                    <button class="btn-control btn-create-game" id="createGameBtn">
+                        <span class="btn-icon">🎲</span>
+                        <span>Yeni Oyun Oluştur</span>
+                    </button>
+                    
+                    <button class="btn-control btn-generate-letters" id="generateLettersBtn" disabled>
+                        <span class="btn-icon">✏️</span>
+                        <span>Harf Oluştur</span>
+                    </button>
+                    
+                    <button class="btn-control btn-show-words" id="showPossibleWordsBtn" style="display: none;">
+                        <span class="btn-icon">📖</span>
+                        <span>Oluşturulabilir Kelimeler</span>
+                        <span class="word-count-badge" id="possibleWordCountBadge">0</span>
+                    </button>
+                    
+                    <button class="btn-control btn-reveal-letters" id="revealLettersBtn" disabled>
+                        <span class="btn-icon">🔤</span>
+                        <span>Harfleri Göster</span>
+                    </button>
+                    
+                    <button class="btn-control btn-start-timer" id="startTimerBtn" disabled>
+                        <span class="btn-icon">⏱️</span>
+                        <span>Zamanlayıcıyı Başlat</span>
+                    </button>
+                    
+                    <button class="btn-control btn-pause-game" id="pauseGameBtn" disabled style="display: none;">
+                        <span class="btn-icon">⏸️</span>
+                        <span>Oyunu Duraklat</span>
+                    </button>
+                    
+                    <button class="btn-control btn-resume-game" id="resumeGameBtn" disabled style="display: none;">
+                        <span class="btn-icon">▶️</span>
+                        <span>Oyunu Devam Ettir</span>
+                    </button>
+                    
+                    <button class="btn-control btn-end-game" id="endGameBtn" disabled>
+                        <span class="btn-icon">🏁</span>
+                        <span>Oyunu Bitir</span>
+                    </button>
+                </div>
+
+                <!-- Harflerin gösterimi (oluşturulduğunda) -->
+                <div class="letters-display" id="lettersDisplay" style="display: none;">
+                    <h3>Mevcut Harfler:</h3>
+                    <div class="letters-row" id="currentLetters">
+                        <!-- JavaScript ile doldurulacak -->
+                    </div>
+                </div>
+                
+                <!-- Kelime Bildirimleri -->
+                <div class="word-notifications" id="wordNotifications">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <h3 style="margin: 0;">📝 Gelen Kelimeler</h3>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="wordDisplayMode" value="all" checked id="wordModeAll">
+                                <span>Tümü (Anlık)</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="wordDisplayMode" value="grouped" id="wordModeGrouped">
+                                <span>Katılımcı Bazlı</span>
+                            </label>
+                            <button class="btn-control btn-small" id="showGameHistoryBtn" title="Oyun Geçmişi" style="padding: 5px 10px; font-size: 12px; background: rgba(30, 30, 30, 0.9); border: 1px solid rgba(255,255,255,0.3); color: white;">
+                                📜 Geçmiş
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Tümü modu (şu anki) -->
+                    <div class="notifications-list" id="notificationsList">
+                        <!-- JavaScript ile doldurulacak -->
+                    </div>
+                    
+                    <!-- Katılımcı bazlı mod -->
+                    <div class="participants-words" id="participantsWords" style="display: none;">
+                        <div class="participant-tabs" id="participantTabs">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                        <div class="participant-words-content" id="participantWordsContent">
+                            <!-- JavaScript ile doldurulacak -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Anlık Puan Durumu -->
+                <div class="live-scores" id="liveScores" style="display: none;">
+                    <h3>⚡ Anlık Puan Durumu</h3>
+                    <div class="live-scores-table" id="liveScoresTable">
+                        <!-- JavaScript ile doldurulacak -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Excel Export -->
+            <div class="admin-section export-section">
+                <h2>📊 Dışa Aktarma</h2>
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <button class="btn-export-excel" id="exportExcelBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s; font-size: 16px; flex: 1; min-width: 250px;">
+                        📥 Tüm Verileri İndir (Excel)
+                    </button>
+                    <button class="btn-export-pdf" id="exportPdfBtn" style="padding: 12px 24px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s; font-size: 16px; flex: 1; min-width: 250px;">
+                        📄 Puan Tablosunu PDF İndir
+                    </button>
+                </div>
+            </div>
+
+            <!-- İstatistikler -->
+            <div class="admin-section stats-section">
+                <h2>📈 İstatistikler</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalPlayers">0</div>
+                        <div class="stat-label">Toplam Katılımcı</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activePlayers">0</div>
+                        <div class="stat-label">Aktif Katılımcı</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="eliminatedPlayers">0</div>
+                        <div class="stat-label">Elenen Katılımcı</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Anlık Oyuncu Aktivitesi -->
+            <div class="admin-section activity-log-section">
+                <h2>📊 Anlık Oyuncu Aktivitesi</h2>
+                <div class="activity-controls" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn-clear-log" id="clearActivityLogBtn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">
+                        🗑️ Temizle
+                    </button>
+                    <label style="display: flex; align-items: center; gap: 8px; margin-left: auto;">
+                        <input type="checkbox" id="autoScrollLog" checked>
+                        <span>Otomatik Kaydır</span>
+                    </label>
+                </div>
+                <div class="activity-log" id="activityLog" style="background: rgba(255, 255, 255, 0.95); border: 1px solid rgba(0, 0, 0, 0.08); border-radius: 12px; padding: 15px; max-height: 400px; overflow-y: auto; font-family: 'Consolas', 'Monaco', monospace; font-size: 13px; line-height: 1.8; color: #000;">
+                    <div style="color: rgba(0, 0, 0, 0.5); text-align: center; padding: 20px;">
+                        Aktivite logları burada görünecek...
+                    </div>
+                </div>
+            </div>
+
+             <!-- Katılımcı Yönetimi -->
+            <div class="admin-section participants-section">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>👥 Katılımcılar</h2>
+                    <div style="display: flex; gap: 20px; align-items: center;">
+                        <!-- Bağlantı Durumu Göstergesi -->
+                        <div style="display: flex; gap: 15px; align-items: center;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: #10b981;"></div>
+                                <span style="font-size: 13px; color: #666;">Bağlı</span>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <div style="width: 12px; height: 12px; border-radius: 3px; background: #ef4444;"></div>
+                                <span style="font-size: 13px; color: #666;">Bağlı Değil</span>
+                            </div>
+                        </div>
+                        <button class="btn-add-participant" id="addParticipantBtn" style="padding: 10px 20px; background: linear-gradient(135deg, #28a745, #20c997); color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: 600; transition: transform 0.2s;">
+                            ➕ Yeni Katılımcı Ekle
+                        </button>
+                    </div>
+                </div>
+                <div class="participants-grid" id="participantsGrid">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oyun Geçmişi Modal -->
+    <div id="gameHistoryModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px; max-height: 90vh; overflow-y: auto;">
+            <span class="close-modal" id="closeGameHistoryModal">&times;</span>
+            <h2>📜 Oyun Geçmişi</h2>
+            <div id="gameHistoryList">
+                <!-- JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Arka plan harflerini oluştur (room.js'den)
+        const VOWELS = ['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü'];
+        const CONSONANTS = ['B', 'C', 'Ç', 'D', 'F', 'G', 'Ğ', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'Ş', 'T', 'V', 'Y', 'Z'];
+        
+        function createBackgroundLetters() {
+            const container = document.getElementById('backgroundLetters');
+            const allLetters = [...VOWELS, ...CONSONANTS];
+            const letterCount = 20;
+            
+            for (let i = 0; i < letterCount; i++) {
+                const letter = document.createElement('div');
+                letter.className = 'bg-letter';
+                letter.textContent = allLetters[Math.floor(Math.random() * allLetters.length)];
+                letter.style.left = Math.random() * 100 + '%';
+                letter.style.fontSize = (Math.random() * 80 + 40) + 'px';
+                letter.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                letter.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(letter);
+            }
+        }
+        
+        createBackgroundLetters();
+    </script>
+
+    <!-- Oyun Ayarları Modal -->
+    <div id="gameSettingsModal" class="modal" style="display: none;">
+        <div class="modal-content settings-modal">
+            <div class="modal-header">
+                <h2>⚙️ Oyun Ayarları</h2>
+                <button class="close-modal" id="closeSettingsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-item">
+                    <label for="defaultGameDuration">Varsayılan Oyun Süresi (Dakika)</label>
+                    <input type="number" id="defaultGameDuration" min="1" max="120" value="10" class="duration-input">
+                    <small>Yeni oyun oluştururken bu süre otomatik kullanılacaktır.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="btn-save">💾 Kaydet</button>
+                <button id="cancelSettingsBtn" class="btn-cancel">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manuel Puan Düzenleme Modal -->
+    <div id="editScoreModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>✏️ Puan Düzenle</h2>
+                <button class="close-modal" id="closeEditScoreModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="edit-score-info">
+                    <p><strong>Katılımcı:</strong> <span id="editScoreParticipantName">-</span></p>
+                    <p><strong>Toplam Puan (Tüm Oyunlar):</strong> <span id="editScoreTotalDisplay">-</span></p>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="currentScoreDisplay">Mevcut Toplam Puan</label>
+                    <input type="number" id="currentScoreDisplay" readonly class="duration-input" style="background: #f0f0f0; cursor: not-allowed;">
+                </div>
+                
+                <div class="setting-item">
+                    <label for="newScoreInput">Yeni Toplam Puan</label>
+                    <input type="number" id="newScoreInput" min="0" class="duration-input" placeholder="Yeni toplam puanı girin">
+                </div>
+                
+                <div class="setting-item">
+                    <label for="scoreChangeReason">Değişiklik Nedeni <span style="color: red;">*</span></label>
+                    <textarea id="scoreChangeReason" rows="3" class="duration-input" style="resize: vertical; font-family: inherit;" placeholder="Puanın neden değiştirildiğini açıklayın (en az 5 karakter)"></textarea>
+                    <small>Bu bilgi denetim kaydına eklenecektir.</small>
+                </div>
+                
+                <div class="setting-item">
+                    <label for="scoreChangedBy">Değiştiren Kişi <span style="color: red;">*</span></label>
+                    <input type="text" id="scoreChangedBy" class="duration-input" placeholder="Adınızı girin (örn: Admin, Mehmet, vs.)">
+                    <small>Bu değişikliği yapan kişinin adı denetim kaydında görünecektir.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveScoreBtn" class="btn-save">💾 Kaydet</button>
+                <button id="cancelScoreBtn" class="btn-cancel">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Score Logs Viewer Modal -->
+    <div id="scoreLogsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>📋 Puan Değişiklik Kayıtları (Denetim Logu)</h2>
+                <button class="close-modal" id="closeScoreLogsModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">🔍 Ara</label>
+                        <input type="text" id="scoreLogsSearch" class="duration-input" placeholder="Kelime, neden veya detaylarda ara..." style="width: 100%;">
+                    </div>
+                    <div style="flex: 1; min-width: 200px;">
+                        <label style="display: block; margin-bottom: 5px; font-size: 13px; font-weight: 600;">👤 Katılımcı</label>
+                        <select id="scoreLogsParticipantFilter" class="duration-input" style="width: 100%;">
+                            <option value="">Tüm Katılımcılar</option>
+                        </select>
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 10px;">
+                        <button id="scoreLogsSearchBtn" class="btn-save" style="height: 42px; padding: 0 20px;">Ara</button>
+                        <button id="exportScoreLogsBtn" class="btn-save" style="height: 42px; padding: 0 20px; background: #28a745;">📊 Excel İndir</button>
+                    </div>
+                </div>
+                
+                <div id="scoreLogsTableContainer" style="max-height: 500px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: linear-gradient(135deg, #667eea, #764ba2); color: white;">
+                            <tr>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Tarih/Saat</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Katılımcı</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">İşlem</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">Eski Puan</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">Yeni Puan</th>
+                                <th style="padding: 12px; text-align: center; border-bottom: 2px solid #555;">Değişim</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Neden/Detay</th>
+                                <th style="padding: 12px; text-align: left; border-bottom: 2px solid #555;">Yapan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="scoreLogsTableBody">
+                            <tr>
+                                <td colspan="8" style="padding: 40px; text-align: center; color: #999;">
+                                    Yükleniyor...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div id="scoreLogsPagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div id="scoreLogsInfo" style="font-size: 13px; color: #666;">
+                        Toplam 0 kayıt
+                    </div>
+                    <div style="display: flex; gap: 5px;">
+                        <button id="scoreLogsPrevBtn" class="btn-cancel" style="padding: 8px 15px;" disabled>← Önceki</button>
+                        <span id="scoreLogsPageInfo" style="padding: 8px 15px; background: #f0f0f0; border-radius: 6px; font-weight: 600;">Sayfa 1</span>
+                        <button id="scoreLogsNextBtn" class="btn-save" style="padding: 8px 15px;" disabled>Sonraki →</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Excel İndirme Seçenekleri Modalı -->
+    <div id="exportOptionsModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" id="closeExportOptions">&times;</span>
+            <h2 style="margin-top: 0; color: #667eea;">📥 Excel İndirme Seçenekleri</h2>
+            
+            <div style="margin: 25px 0;">
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="radio" name="exportType" value="default" checked style="margin-right: 10px;">
+                    <strong>Varsayılan İndirme</strong>
+                    <p style="margin: 5px 0 0 30px; color: #666; font-size: 14px;">
+                        Tüm oyun verileri (katılımcılar, puanlar, oyun geçmişi)
+                    </p>
+                </label>
+                
+                <label style="display: block; margin-bottom: 15px;">
+                    <input type="radio" name="exportType" value="words" style="margin-right: 10px;">
+                    <strong>Katılımcı Kelimeleri</strong>
+                    <p style="margin: 5px 0 0 30px; color: #666; font-size: 14px;">
+                        Katılımcıların yazdığı kelimeler (harf sayısına göre sıralı, geçerlilik durumu ile)
+                    </p>
+                </label>
+            </div>
+            
+            <!-- Katılımcı seçimi (words seçilince gösterilecek) -->
+            <div id="participantSelectionDiv" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    📋 Katılımcı Seçin:
+                </label>
+                <select id="participantSelect" style="width: 100%; padding: 10px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px;">
+                    <option value="">Katılımcı seçin...</option>
+                    <option value="all">Tüm Katılımcıları Seç</option>
+                </select>
+            </div>
+            
+            <!-- Oyun seçimi (katılımcı seçilince gösterilecek) -->
+            <div id="gameSelectionDiv" style="display: none; margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    🎮 Hangi Oyunların Kelimelerini İndirmek İstersiniz?
+                </label>
+                <div id="gameCheckboxes" style="max-height: 200px; overflow-y: auto; padding: 10px;">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+                <label style="display: block; margin-top: 10px;">
+                    <input type="checkbox" id="selectAllGames" style="margin-right: 8px;">
+                    <strong>Tümünü Seç</strong>
+                </label>
+            </div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 30px;">
+                <button id="confirmExportBtn" class="btn-save" style="flex: 1; padding: 12px; font-size: 16px;">
+                    📥 İndir
+                </button>
+                <button id="cancelExportBtn" class="btn-cancel" style="flex: 1; padding: 12px; font-size: 16px;">
+                    ❌ İptal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Özel Harfler Modal -->
+    <div id="customLettersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>✏️ Özel Harfler Düzenle</h2>
+                <button class="close-modal" id="closeCustomLettersModal">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    Oyunlarda kullanılacak harfleri düzenleyin. Varsayılan Türkçe alfabesi gösterilmektedir. 
+                    İstediğiniz harfleri ekleyebilir veya kaldırabilirsiniz (örn: X, Q gibi).
+                </p>
+                
+                <label style="display: block; margin-bottom: 10px; font-weight: 600;">
+                    📝 Harfler (virgülle ayırın):
+                </label>
+                <textarea id="customLettersInput" 
+                    style="width: 100%; min-height: 150px; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-family: 'Courier New', monospace; font-size: 16px; resize: vertical;"
+                    placeholder="A,B,C,Ç,D,E,F,G,Ğ,H,I,İ,J,K,L,M,N,O,Ö,P,R,S,Ş,T,U,Ü,V,Y,Z"></textarea>
+                
+                <div style="margin-top: 15px; padding: 12px; background: #f0f8ff; border-left: 4px solid #667eea; border-radius: 6px;">
+                    <strong>💡 İpucu:</strong> Harfleri virgülle ayırın. Boşluklar otomatik temizlenecek.
+                    <br>Örnek: <code>A,B,C,X,Q</code>
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="resetToDefaultLettersBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        🔄 Varsayılana Dön
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveCustomLettersBtn" class="btn-save">💾 Kaydet</button>
+                <button id="cancelCustomLettersBtn" class="btn-cancel">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Özel Puanlama Modal -->
+    <div id="customScoringModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>⚙️ Özel Puanlama Sistemi</h2>
+                <button class="close-modal" id="closeCustomScoringModal">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 20px; color: #666; font-size: 14px;">
+                    Her harf uzunluğu için ayrı puan ve kabul edilme ayarları yapabilirsiniz.
+                    Varsayılan: 2 harfli kelimeler 2 puan, 3 harfli 3 puan, vb.
+                </p>
+                
+                <div id="scoringRulesContainer" style="display: flex; flex-direction: column; gap: 15px;">
+                    <!-- 2-8 harf için her biri -->
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled2" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled2" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            2 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints2" min="0" max="100" value="2" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled3" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled3" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            3 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints3" min="0" max="100" value="3" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled4" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled4" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            4 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints4" min="0" max="100" value="4" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled5" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled5" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            5 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints5" min="0" max="100" value="5" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled6" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled6" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            6 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints6" min="0" max="100" value="6" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled7" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled7" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            7 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints7" min="0" max="100" value="7" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                    
+                    <div class="scoring-rule-item" style="display: flex; align-items: center; gap: 15px; padding: 15px; background: #f8f9fa; border-radius: 10px; border: 2px solid #e0e0e0;">
+                        <input type="checkbox" id="scoringEnabled8" checked style="width: 20px; height: 20px; cursor: pointer;">
+                        <label for="scoringEnabled8" style="font-weight: 600; min-width: 120px; cursor: pointer;">
+                            8 Harfli Kelime
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 8px;">
+                            <span style="color: #666;">Puan:</span>
+                            <input type="number" id="scoringPoints8" min="0" max="100" value="8" style="width: 80px; padding: 8px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 12px; background: #fff3cd; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                    <strong>⚠️ Önemli:</strong> Checkbox'ı kapalı olan uzunluktaki kelimeler kabul edilmeyecektir!
+                </div>
+                
+                <div style="margin-top: 15px;">
+                    <button id="resetToDefaultScoringBtn" style="padding: 8px 16px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        🔄 Varsayılana Dön
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveCustomScoringBtn" class="btn-save">💾 Kaydet</button>
+                <button id="cancelCustomScoringBtn" class="btn-cancel">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kutucuk Bazlı Harf Çıkışı Modal -->
+    <div id="boxLettersModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>📦 Kutucuk Bazlı Harf Çıkışı</h2>
+                <button class="close-modal" id="closeBoxLettersModal">×</button>
+            </div>
+            <div class="modal-body">
+                <div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #fef3c7, #fde68a); border-radius: 8px; border-left: 4px solid #f59e0b;">
+                    <h3 style="margin: 0 0 10px 0; color: #92400e;">ℹ️ Nasıl Çalışır?</h3>
+                    <p style="margin: 0; color: #78350f; line-height: 1.5;">
+                        <strong>Turuncu kutucuklar</strong> (ünlü harfler) ve <strong>mor kutucuklar</strong> (ünsüz harfler) için çıkabilecek harfleri belirleyin. 
+                        Her kutucuğa tıklayarak o kutucuk için çıkabilecek harfleri seçebilirsiniz.
+                    </p>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <!-- Ünlü Harf Kutucukları (Turuncu) -->
+                    <div>
+                        <h3 style="color: #ea580c; margin-bottom: 10px;">🟠 Ünlü Harf Kutucukları (3 adet)</h3>
+                        <div id="vowelBoxes" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <!-- JavaScript ile dinamik olarak eklenecek -->
+                        </div>
+                    </div>
+
+                    <!-- Ünsüz Harf Kutucukları (Mor) -->
+                    <div>
+                        <h3 style="color: #7c3aed; margin-bottom: 10px;">🟣 Ünsüz Harf Kutucukları (5 adet)</h3>
+                        <div id="consonantBoxes" style="display: flex; gap: 15px; flex-wrap: wrap;">
+                            <!-- JavaScript ile dinamik olarak eklenecek -->
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-top: 20px; padding: 12px; background: #e0f2fe; border-left: 4px solid #0284c7; border-radius: 6px;">
+                    <strong>💡 İpucu:</strong> Kutucukların içindeki harfler oyun sırasında rastgele seçilir. 
+                    Boş bırakılan kutucuklar normal harf dağılımını kullanır.
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button id="saveBoxLettersBtn" class="btn-save">💾 Kaydet</button>
+                <button id="cancelBoxLettersBtn" class="btn-cancel">❌ İptal</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Oluşturulabilir Kelimeler Modal -->
+    <div id="possibleWordsModal" class="modal" style="display: none; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+        <div class="modal-content" style="max-width: 900px; max-height: 80vh; overflow-y: auto; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+            <div class="modal-header">
+                <h2 style="font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">📖 Oluşturulabilir Kelimeler</h2>
+                <button id="closePossibleWordsModal" class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 20px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                <div id="wordsLoadingContainer" style="text-align: center; padding: 40px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                    <div style="font-size: 24px; margin-bottom: 10px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">⏳ Kelimeler aranıyor...</div>
+                    <div style="color: #999; font-size: 14px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">Lütfen bekleyiniz...</div>
+                </div>
+                
+                <div id="wordsResultContainer" style="display: none; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                    <!-- Özet bilgisi -->
+                    <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                        <div style="font-size: 28px; font-weight: bold; margin-bottom: 5px; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                            <span id="totalWordsCount">0</span> Kelime
+                        </div>
+                        <div style="font-size: 14px; opacity: 0.9; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                            Mevcut harflerden oluşturulabilecek toplam kelime sayısı
+                        </div>
+                    </div>
+                    
+                    <!-- Harf sayısına göre gruplandırılmış kelimeler -->
+                    <div id="wordsGroupedContainer" style="font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;"></div>
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; gap: 10px; justify-content: flex-end; font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;">
+                <button id="closePossibleWordsBtn" class="btn-cancel">❌ Kapat</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="admin.js"></script>
+</body>
+</html>

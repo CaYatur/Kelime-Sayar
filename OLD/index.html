@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=0.75, maximum-scale=5.0, user-scalable=yes">
+    <title>Kelime Sayar - CaYaDev</title>
+    <meta name="description" content="CaYaDev Kelime Sayar - Çok oyunculu kelime oluşturma oyunu. Oda kur, katıl ve harflerle kelimeler oluştur!">
+    <link rel="icon" href="../../../icons/favicon.ico">
+    <link rel="stylesheet" href="styles.css?v=9">
+</head>
+<body>
+    <!-- Arka Plan Harfler -->
+    <div class="background-letters" id="backgroundLetters"></div>
+
+    <!-- Üst Navigation Bar -->
+    <header class="top-nav">
+        <div class="nav-content">
+            <div class="logo-container">
+                <img src="../../css/CaYaDev.svg" style="position: absolute; top: 20px; cursor: pointer;" alt="CaYaDev Logo" class="logo" id="cayadevLogo">
+            </div>
+            <div class="room-title-header" id="roomTitleHeader" style="display: none;"></div>
+            <div class="nav-title">Kelime Sayar</div>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Ana Menü (Başlangıç Ekranı) -->
+        <div id="mainMenu" class="main-menu">
+            <h1 class="title">KELİME SAYAR</h1>
+            <div class="menu-buttons">
+                <button class="menu-btn create-room-btn" id="createRoomBtn">
+                    <span class="btn-icon">🎮</span>
+                    <span class="btn-text">Oda Kur</span>
+                </button>
+                <button class="menu-btn join-room-btn" id="joinRoomBtn">
+                    <span class="btn-icon">🚪</span>
+                    <span class="btn-text">Odaya Katıl</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Oyun Ekranı (Başlangıçta gizli) -->
+        <div id="gameScreen" class="game-screen" style="display: none;">
+            <!-- Köşe Logoları -->
+            <div class="corner-logos">
+                <img id="leftLogo" class="corner-logo left-logo" alt="Sol Logo" style="display: none;">
+                <img id="rightLogo" class="corner-logo right-logo" alt="Sağ Logo" style="display: none;">
+            </div>
+            
+            <!-- Başlık ve Oda Bilgisi -->
+            <div class="game-header">
+                <h1 class="title" id="gameTitle">KELİME SAYAR</h1>
+                <div class="room-info-bar">
+                    <span class="room-code-display">Oda: <strong id="currentRoomCode">-</strong></span>
+                    <span class="participant-name-display">Oyuncu: <strong id="currentParticipantName">-</strong></span>
+                </div>
+            </div>
+
+            <!-- Zamanlayıcı (Üstte, büyük) -->
+            <div class="game-timer">
+                <div class="timer-display-large">
+                    <span id="gameMinutes">00</span>:<span id="gameSeconds">00</span>
+                </div>
+                <div class="timer-status" id="timerStatus">Oyun Başlamadı</div>
+            </div>
+            
+            <br>
+            <!-- Harf Kartları -->
+            <div class="cards-container" id="cardsContainer">
+                <!-- JavaScript ile doldurulacak - başta ? olarak -->
+            </div>
+
+            <br>
+            <!-- Kelime Oluşturma Alanı -->
+            <div class="word-building-area">
+                <h3>Kelime Oluştur:</h3>
+                <div class="selected-letters" id="selectedLetters">
+                    <span class="placeholder-text">Harflere tıklayarak kelime oluştur...</span>
+                </div>
+                <div class="word-actions">
+                    <button class="btn-submit" id="submitWordBtn" disabled>✓ Gönder</button>
+                    <div class="secondary-actions">
+                        <button class="btn-undo" id="undoBtn" disabled>↶ Geri Al</button>
+                        <button class="btn-clear" id="clearBtn" disabled>✕ Temizle</button>
+                    </div>
+                </div>
+                <div class="word-result" id="wordResult"></div>
+            </div>
+
+            <!-- Oyun Durumu Mesajları -->
+            <div class="game-status-message" id="gameStatusMessage" style="display: none;">
+                <p id="statusMessageText">Oyun bekleniyor...</p>
+            </div>
+            
+            <!-- Oyun Sonuç Ekranı -->
+            <div class="game-results-screen" id="gameResultsScreen">
+                <div class="results-container">
+                    <button class="close-results-btn" id="closeResultsBtn">&times;</button>
+                    <h2>🏆 OYUN BİTTİ!</h2>
+                    <div class="results-table" id="resultsTable">
+                        <!-- JavaScript ile doldurulacak -->
+                    </div>
+                    <div class="countdown-message" id="countdownMessage">
+                        <p>Katılımcı seçimine <strong id="countdownSeconds">60</strong> saniye sonra dönülecek...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Oyun Duraklatıldı (Kapatılamaz) -->
+    <div id="pauseModal" class="modal" style="display: none;">
+        <div class="modal-content pause-modal">
+            <div class="pause-icon">⏸️</div>
+            <h2>OYUN DURAKLATILDI</h2>
+            <p>Oyun yönetici tarafından duraklatıldı.</p>
+            <p>Lütfen oyunun devam etmesini bekleyin...</p>
+            <div class="pause-animation">
+                <div class="pulse"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Oda Kur (4 Adımlı) -->
+    <div id="createRoomModal" class="modal">
+        <div class="modal-content create-room-modal">
+            <span class="close" id="closeCreateRoom">&times;</span>
+            <h2>🎮 Yeni Oda Oluştur</h2>
+            
+            <!-- Adım göstergesi -->
+            <div class="steps-indicator">
+                <div class="step active" data-step="1">1. Süre</div>
+                <div class="step" data-step="2">2. Katılımcılar</div>
+                <div class="step" data-step="3">3. Görseller</div>
+                <div class="step" data-step="4">4. Tamamla</div>
+            </div>
+            
+            <!-- Adım 1: Süre Seçimi -->
+            <div class="step-content" data-step="1">
+                <div class="form-group">
+                    <label>Oda Başlığı</label>
+                    <input type="text" id="roomTitle" placeholder="Örn: Kelime Yarışması..." maxlength="50">
+                    <small>* Oyun ekranı ve skor tablosunda görünecek (İsteğe bağlı)</small>
+                </div>
+                <div class="form-group">
+                    <label>Oda Aktif Kalma Süresi (Saat)</label>
+                    <input type="range" id="durationSlider" min="2" max="168" value="24" step="1">
+                    <div class="duration-display">
+                        <span id="durationValue">24</span> saat (<span id="durationDays">1</span> gün)
+                    </div>
+                </div>
+                <button class="btn-next" id="step1Next">İleri</button>
+            </div>
+            
+            <!-- Adım 2: Katılımcılar -->
+            <div class="step-content" data-step="2" style="display: none;">
+                <div class="form-group">
+                    <label>Katılımcı İsimleri</label>
+                    
+                    <!-- Toplu Ekleme Seçeneği -->
+                    <div style="margin-bottom: 15px;">
+                        <button type="button" class="btn-toggle-bulk" id="toggleBulkInputBtn">
+                            📋 Toplu Ekle (Her satır = 1 katılımcı)
+                        </button>
+                    </div>
+                    
+                    <!-- Toplu ekleme textarea (başlangıçta gizli) -->
+                    <div id="bulkInputContainer" style="display: none; margin-bottom: 15px;">
+                        <textarea 
+                            id="bulkParticipantInput" 
+                            placeholder="Her satıra bir isim yazın:&#10;Ali&#10;Ayşe&#10;Mehmet&#10;..."
+                            class="bulk-participant-textarea"
+                        ></textarea>
+                        <button type="button" class="btn-apply-bulk" id="applyBulkBtn">
+                            ✓ Uygula
+                        </button>
+                    </div>
+                    
+                    <div class="participants-list" id="participantsList">
+                        <div class="participant-input">
+                            <input type="text" placeholder="Katılımcı 1">
+                            <button class="btn-remove-participant" disabled>×</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-participant" id="addParticipantBtn">+ Katılımcı Ekle</button>
+                </div>
+                <div class="step-buttons">
+                    <button class="btn-back" id="step2Back">Geri</button>
+                    <button class="btn-next" id="step2Next">İleri</button>
+                </div>
+            </div>
+            
+            <!-- Adım 3: Görseller -->
+            <div class="step-content" data-step="3" style="display: none;">
+                <div class="form-group">
+                    <label>Logo Görselleri (Oyun ekranının köşelerinde görünecek)</label>
+                    <div class="image-uploads">
+                        <div class="image-upload-box">
+                            <label>Sol Üst Logo</label>
+                            <input type="file" id="leftImage" accept="image/*">
+                            <div class="image-preview" id="leftImagePreview">
+                                <span class="upload-placeholder">📷</span>
+                            </div>
+                        </div>
+                        <div class="image-upload-box">
+                            <label>Sağ Üst Logo</label>
+                            <input type="file" id="rightImage" accept="image/*">
+                            <div class="image-preview" id="rightImagePreview">
+                                <span class="upload-placeholder">📷</span>
+                            </div>
+                        </div>
+                    </div>
+                    <small>* Maksimum 5MB, otomatik olarak 150x150px'e küçültülecektir</small>
+                </div>
+                <div class="step-buttons">
+                    <button class="btn-back" id="step3Back">Geri</button>
+                    <button class="btn-next" id="step3Next">Oda Oluştur</button>
+                </div>
+            </div>
+            
+            <!-- Adım 4: Tamamlandı (Yönetici Paneli) -->
+            <div class="step-content" data-step="4" style="display: none;">
+                <div class="room-created-success">
+                    <div class="success-icon">✅</div>
+                    <h3>Oda Başarıyla Oluşturuldu!</h3>
+                    <div class="room-info">
+                        <div class="info-item">
+                            <label>Oda Kodu:</label>
+                            <div class="code-display">
+                                <span id="createdRoomCode">--------</span>
+                                <button class="btn-copy" id="copyRoomCodeBtn" title="Kopyala">📋</button>
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <label>Yönetici Şifresi:</label>
+                            <div class="code-display">
+                                <span id="adminPassword">--------</span>
+                                <button class="btn-copy" id="copyAdminPasswordBtn" title="Kopyala">📋</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="warning-text">⚠️ Yönetici şifresini kaydedin! Tekrar görüntülenemez.</p>
+                    <button class="btn-admin-panel" id="goToAdminPanelBtn">Yönetici Paneline Git</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Odaya Katıl -->
+    <div id="joinRoomModal" class="modal">
+        <div class="modal-content join-room-modal">
+            <span class="close" id="closeJoinRoom">&times;</span>
+            <h2>🚪 Odaya Katıl</h2>
+            
+            <!-- Oda Kodu Girişi -->
+            <div id="roomCodeEntry" class="room-code-entry">
+                <div class="form-group">
+                    <label>8 Haneli Kod</label>
+                    <input type="text" id="roomCodeInput" placeholder="Oda Kodu veya Admin Şifresi" maxlength="8">
+                    <small>* Oda kodu girerseniz oyuna, admin şifresi girerseniz yönetici paneline yönlendirilirsiniz</small>
+                </div>
+                <button class="btn-submit" id="joinRoomSubmitBtn">Devam Et</button>
+            </div>
+            
+            <!-- Katılımcı Seçimi -->
+            <div id="participantSelection" class="participant-selection" style="display: none;">
+                <h3>Katılımcı Seçin</h3>
+                <div class="participant-buttons" id="participantButtons">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Kelime Kontrol -->
+    <div id="searchModal" class="modal">
+        <div class="modal-content search-modal">
+            <span class="close" id="closeSearch">&times;</span>
+            <h2>🔍 Kelime Kontrol</h2>
+            <div class="search-content">
+                <div class="input-group">
+                    <input type="text" id="modalWordInput" placeholder="Kelime girin..." maxlength="8" autocomplete="off">
+                </div>
+                <div id="modalCheckResult" class="modal-result"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Süre Bitti -->
+    <div id="timeUpModal" class="modal time-up-modal">
+        <div class="modal-content time-up-content">
+            <div class="time-up-icon">⏰</div>
+            <h2>SÜRE DOLDU!</h2>
+            <p>Oyun sona erdi. Harflerle kelime oluşturup kontrol edebilirsiniz.</p>
+            
+            <!-- Harfler -->
+            <div class="time-up-letters" id="timeUpLetters">
+                <!-- JavaScript ile doldurulacak -->
+            </div>
+            
+            <!-- Kelime Kontrol -->
+            <div class="time-up-search">
+                <div class="input-group">
+                    <input type="text" id="timeUpWordInput" placeholder="Kontrol için kelime girin..." maxlength="8" autocomplete="off">
+                </div>
+                <div id="timeUpCheckResult" class="time-up-result"></div>
+            </div>
+            
+            <div class="time-up-buttons">
+                <button class="btn-new-game" id="newGameBtn">Yeni Oyun</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Onay (Oyun Durdur) -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content confirm-modal">
+            <div class="confirm-icon">⚠️</div>
+            <h2>Oyunu Durdurmak İstediğinize Emin Misiniz?</h2>
+            <p>Yeni bir oyun başlatılacak ve mevcut oyun sıfırlanacak.</p>
+            <div class="confirm-buttons">
+                <button class="btn-confirm-yes" id="confirmYes">Evet, Durdur</button>
+                <button class="btn-confirm-no" id="confirmNo">Hayır, Devam Et</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal - Ayarlar -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content settings-modal">
+            <span class="close" id="closeSettings">&times;</span>
+            <h2>⚙️ Oyun Ayarları</h2>
+            <div class="settings-content">
+                <div class="setting-item">
+                    <label>Oyun Süresi</label>
+                    <div class="time-inputs-row">
+                        <div class="time-input-box">
+                            <label for="minutesInput">Dakika</label>
+                            <div class="time-input-group">
+                                <button class="time-btn" id="decreaseMinutes">-</button>
+                                <input type="number" id="minutesInput" min="0" value="10">
+                                <button class="time-btn" id="increaseMinutes">+</button>
+                            </div>
+                        </div>
+                        <div class="time-separator">:</div>
+                        <div class="time-input-box">
+                            <label for="secondsInput">Saniye</label>
+                            <div class="time-input-group">
+                                <button class="time-btn" id="decreaseSeconds">-</button>
+                                <input type="number" id="secondsInput" min="0" max="59" value="0">
+                                <button class="time-btn" id="increaseSeconds">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="time-presets">
+                        <button class="preset-btn" data-minutes="3" data-seconds="0">3 dk</button>
+                        <button class="preset-btn" data-minutes="5" data-seconds="0">5 dk</button>
+                        <button class="preset-btn" data-minutes="10" data-seconds="0">10 dk</button>
+                        <button class="preset-btn" data-minutes="15" data-seconds="0">15 dk</button>
+                        <button class="preset-btn" data-minutes="0" data-seconds="30">30 sn</button>
+                    </div>
+                </div>
+                <button class="save-settings-btn" id="saveSettings">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <audio id="startSound" preload="auto">
+        <source src="sounds/start.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="stopSound" preload="auto">
+        <source src="sounds/stop.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="endSound" preload="auto">
+        <source src="sounds/end.mp3" type="audio/mpeg">
+    </audio>
+
+    <script src="room.js?v=4"></script>
+    <!-- FPS Monitor devre dışı -->
+    <!-- <script src="fps-monitor.js?v=1"></script> -->
+    <!-- app.js sadece oyun ekranında çalışacak -->
+    <script>
+        // app.js'i sadece oyun ekranı gösterildiğinde yükle
+        let appJsLoaded = false;
+        function loadGameScript() {
+            if (!appJsLoaded) {
+                const script = document.createElement('script');
+                script.src = 'app.js?v=2';
+                document.body.appendChild(script);
+                appJsLoaded = true;
+            }
+        }
+
+        // Arka plan harflerini oluştur (room.js'den)
+        const VOWELS = ['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü'];
+        const CONSONANTS = ['B', 'C', 'Ç', 'D', 'F', 'G', 'Ğ', 'H', 'J', 'K', 'L', 'M', 'N', 'P', 'R', 'S', 'Ş', 'T', 'V', 'Y', 'Z'];
+        
+        function createBackgroundLetters() {
+            const container = document.getElementById('backgroundLetters');
+            const allLetters = [...VOWELS, ...CONSONANTS];
+            const letterCount = 20;
+            
+            for (let i = 0; i < letterCount; i++) {
+                const letter = document.createElement('div');
+                letter.className = 'bg-letter';
+                letter.textContent = allLetters[Math.floor(Math.random() * allLetters.length)];
+                letter.style.left = Math.random() * 100 + '%';
+                letter.style.fontSize = (Math.random() * 80 + 40) + 'px';
+                letter.style.animationDuration = (Math.random() * 15 + 10) + 's';
+                letter.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(letter);
+            }
+        }
+        
+        createBackgroundLetters();
+        
+    </script>
+
+    <!-- Ana Sayfaya Dönüş Onay Modal -->
+    <div id="exitGameConfirmModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <h2 style="margin-top: 0; color: #667eea;">⚠️ Oyundan Ayrılmak İstiyor Musunuz?</h2>
+            <p style="color: #666; margin: 20px 0;">
+                Oyun devam ediyor. Ana sayfaya dönmek istediğinize emin misiniz?
+            </p>
+            <div style="display: flex; gap: 10px; justify-content: center; margin-top: 30px;">
+                <button id="confirmExitGame" class="btn-submit" style="background: #f44336;">Evet, Ayrıl</button>
+                <button id="cancelExitGame" class="btn-clear">Hayır, Kalmak İstiyorum</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tam Ekran Butonu -->
+    <button id="fullscreenBtn" class="fullscreen-btn" title="Tam Ekran">⛶</button>
+    
+    <script>
+        // Tam ekran işlevi
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        
+        function updateFullscreenButton() {
+            if (document.fullscreenElement) {
+                // Tam ekrandayken butonu gizle
+                fullscreenBtn.style.display = 'none';
+            } else {
+                // Normal modda butonu göster
+                fullscreenBtn.style.display = 'flex';
+            }
+        }
+        
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error('Tam ekran hatası:', err);
+                });
+            }
+        });
+        
+        // Tam ekran değişikliklerini dinle
+        document.addEventListener('fullscreenchange', updateFullscreenButton);
+        
+        // Sayfa yüklenince butonu güncelle
+        updateFullscreenButton();
+
+        // 🔍 Responsive zoom ayarlaması
+        let lastZoom = window.devicePixelRatio;
+        
+        function calculateOptimalZoom() {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            
+            // 800x500 altında agresif scaling
+            if (viewportWidth <= 800 && viewportHeight <= 500) {
+                const zoomWidth = Math.max(0.75, viewportWidth / 1024);
+                const zoomHeight = Math.max(0.75, viewportHeight / 720);
+                return Math.min(zoomWidth, zoomHeight);
+            }
+            
+            // 1024x768 altında orta scaling
+            if (viewportWidth <= 1024 && viewportHeight <= 768) {
+                const zoomWidth = Math.max(0.85, viewportWidth / 1024);
+                const zoomHeight = Math.max(0.85, viewportHeight / 720);
+                return Math.min(zoomWidth, zoomHeight);
+            }
+            
+            return 1;
+        }
+        
+        function applyOptimalZoom() {
+            const optimalZoom = calculateOptimalZoom();
+            const htmlElement = document.documentElement;
+            const baseFontSize = 16;
+            const newFontSize = baseFontSize * optimalZoom;
+            
+            htmlElement.style.fontSize = newFontSize + 'px';
+            console.log(`📐 Optimal zoom: ${(optimalZoom * 100).toFixed(0)}% (${window.innerWidth}x${window.innerHeight})`);
+        }
+        
+        function handleZoomChange() {
+            const currentZoom = window.devicePixelRatio;
+            if (currentZoom !== lastZoom) {
+                lastZoom = currentZoom;
+                document.body.style.transition = 'all 0.15s ease-out';
+                setTimeout(() => { document.body.style.transition = ''; }, 150);
+                console.log(`🔍 Zoom seviyesi: ${(currentZoom * 100).toFixed(0)}%`);
+            }
+            applyOptimalZoom();
+        }
+        
+        // Sayfa yüklenince optimal zoom'u uygula
+        window.addEventListener('load', applyOptimalZoom);
+        window.addEventListener('resize', handleZoomChange);
+        
+        // Sayfa yüklenince zoom kontrolü yap
+        handleZoomChange();
+    </script>
+</body>
+</html>
